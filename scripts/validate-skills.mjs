@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Agent Skills doğrulayıcı (bağımlılıksız).
+ * Agent Skills validator (no dependencies).
  *
  * Spec: https://agentskills.io/specification
- * Referans kütüphane `skills-ref` Python'dur ve kendi README'sinde "yalnız gösterim amaçlı"
- * der → CI için burada kendi kontrollerimizi tutuyoruz.
+ * The reference library `skills-ref` is Python and its own README calls it "for demonstration
+ * purposes only" → we keep our own checks here for CI.
  */
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs'
 import { join, dirname, resolve } from 'node:path'
@@ -26,21 +26,21 @@ const warnings = []
 const fail = (where, msg) => errors.push(`${where}: ${msg}`)
 const warn = (where, msg) => warnings.push(`${where}: ${msg}`)
 
-/** Frontmatter'ın yalnız üst seviye anahtarlarını okur (spec'in ihtiyacı bu kadar). */
+/** Reads only the top-level frontmatter keys (that is all the spec needs). */
 function parseFrontmatter(raw, where) {
   if (!raw.startsWith('---\n')) {
-    fail(where, 'YAML frontmatter yok (dosya `---` ile başlamalı)')
+    fail(where, 'no YAML frontmatter (the file must start with `---`)')
     return null
   }
   const end = raw.indexOf('\n---', 3)
   if (end === -1) {
-    fail(where, 'frontmatter kapanmamış (`---`)')
+    fail(where, 'unterminated frontmatter (`---`)')
     return null
   }
   const fields = {}
   const rawUnquoted = new Set()
   for (const line of raw.slice(4, end).split('\n')) {
-    if (!line.trim() || line.startsWith('#') || /^\s/.test(line)) continue // iç içe satırlar: değer olarak okumayız
+    if (!line.trim() || line.startsWith('#') || /^\s/.test(line)) continue // nested lines are not read as values
     const m = /^([A-Za-z0-9_-]+):\s*(.*)$/.exec(line)
     if (!m) continue
     const value = m[2].trim()
@@ -54,64 +54,64 @@ function checkSkill(name) {
   const dir = join(SKILLS_DIR, name)
   const file = join(dir, 'SKILL.md')
   const where = `skills/${name}`
-  if (!existsSync(file)) return fail(where, 'SKILL.md yok')
+  if (!existsSync(file)) return fail(where, 'SKILL.md missing')
 
   const raw = readFileSync(file, 'utf8')
   const parsed = parseFrontmatter(raw, where)
   if (!parsed) return
   const { fields, rawUnquoted, body } = parsed
 
-  if (!fields.name) fail(where, '`name` zorunlu')
+  if (!fields.name) fail(where, '`name` is required')
   else {
-    if (fields.name !== name) fail(where, `\`name\` (${fields.name}) dizin adıyla aynı olmalı`)
-    if (fields.name.length > MAX_NAME) fail(where, `\`name\` ${MAX_NAME} karakteri aşıyor`)
-    if (!NAME_RE.test(fields.name)) fail(where, '`name` yalnız a-z0-9 ve tek tire içerebilir, tire ile başlayıp bitemez')
-    if (!fields.name.startsWith(REQUIRED_PREFIX)) fail(where, `\`name\` "${REQUIRED_PREFIX}" ile başlamalı (isim alanı global)`)
+    if (fields.name !== name) fail(where, `\`name\` (${fields.name}) must match the directory name`)
+    if (fields.name.length > MAX_NAME) fail(where, `\`name\` exceeds ${MAX_NAME} characters`)
+    if (!NAME_RE.test(fields.name)) fail(where, '`name` may contain only a-z0-9 and single hyphens, and cannot start or end with one')
+    if (!fields.name.startsWith(REQUIRED_PREFIX)) fail(where, `\`name\` must start with "${REQUIRED_PREFIX}" (the namespace is global)`)
   }
 
-  // Tırnaksız bir YAML skaları ": " içeremez — parser bunu iç içe mapping sanar ve
-  // skill'i SESSİZCE atlar (`npx skills add` uyarı basıp geçer). Doğrulayıcı yakalamalı.
+  // An unquoted YAML scalar cannot contain ": " — the parser reads it as a nested mapping and
+  // the skill is SKIPPED SILENTLY (`npx skills add` prints a warning and moves on).
   for (const [key, value] of Object.entries(fields)) {
     if (rawUnquoted.has(key) && value.includes(': '))
-      fail(where, `\`${key}\` tırnaksız değerinde ": " var — YAML bunu iç içe mapping sanar, ya tırnak içine alın ya ifadeyi değiştirin`)
+      fail(where, `unquoted \`${key}\` contains ": " — YAML reads that as a nested mapping; quote the value or rephrase it`)
   }
 
-  if (!fields.description) fail(where, '`description` zorunlu')
-  else if (fields.description.length > MAX_DESCRIPTION) fail(where, `\`description\` ${MAX_DESCRIPTION} karakteri aşıyor`)
+  if (!fields.description) fail(where, '`description` is required')
+  else if (fields.description.length > MAX_DESCRIPTION) fail(where, `\`description\` exceeds ${MAX_DESCRIPTION} characters`)
 
   if (fields.compatibility && fields.compatibility.length > MAX_COMPATIBILITY)
-    fail(where, `\`compatibility\` ${MAX_COMPATIBILITY} karakteri aşıyor`)
+    fail(where, `\`compatibility\` exceeds ${MAX_COMPATIBILITY} characters`)
 
   for (const key of Object.keys(fields))
-    if (!SPEC_FIELDS.has(key)) warn(where, `spec dışı frontmatter alanı: \`${key}\``)
+    if (!SPEC_FIELDS.has(key)) warn(where, `frontmatter field outside the spec: \`${key}\``)
 
   const lines = raw.split('\n').length
-  if (lines > MAX_LINES) warn(where, `SKILL.md ${lines} satır — ${MAX_LINES} sınırını aşıyor, detayı references/'a taşıyın`)
+  if (lines > MAX_LINES) warn(where, `SKILL.md is ${lines} lines — over the ${MAX_LINES} limit, move detail into references/`)
 
-  // Gövdedeki relative referanslar gerçekten var mı?
+  // Do the relative references in the body actually exist?
   const refs = new Set()
   for (const m of body.matchAll(/\]\(([^)#:]+\.(?:md|mjs|js|json|vitrine|txt))\)/g)) refs.add(m[1])
   for (const m of body.matchAll(/`((?:references|scripts|assets)\/[^`]+)`/g)) refs.add(m[1])
   for (const ref of refs) {
-    if (ref.startsWith('/') || ref.includes('..')) { warn(where, `mutlak/yukarı referans: ${ref}`); continue }
-    if (!existsSync(join(dir, ref))) fail(where, `ölü referans: ${ref}`)
+    if (ref.startsWith('/') || ref.includes('..')) { warn(where, `absolute or upward reference: ${ref}`); continue }
+    if (!existsSync(join(dir, ref))) fail(where, `dead reference: ${ref}`)
   }
 }
 
 const skills = readdirSync(SKILLS_DIR).filter((n) => statSync(join(SKILLS_DIR, n)).isDirectory())
-if (skills.length === 0) fail('skills/', 'hiç skill yok')
+if (skills.length === 0) fail('skills/', 'no skills found')
 skills.forEach(checkSkill)
 
-// Katalog dosyaları her skill'i kapsıyor mu?
+// Do the catalogue files cover every skill?
 const listed = new Set(JSON.parse(readFileSync(join(ROOT, 'skills.sh.json'), 'utf8')).groupings.flatMap((g) => g.skills))
-for (const name of skills) if (!listed.has(name)) fail('skills.sh.json', `${name} hiçbir gruba girmemiş`)
+for (const name of skills) if (!listed.has(name)) fail('skills.sh.json', `${name} is not in any group`)
 
 const plugins = JSON.parse(readFileSync(join(ROOT, '.claude-plugin/marketplace.json'), 'utf8')).plugins
 const pluginSkills = new Set(plugins.flatMap((p) => p.skills ?? []))
-for (const name of skills) if (!pluginSkills.has(`./skills/${name}`)) fail('.claude-plugin/marketplace.json', `${name} listelenmemiş`)
-for (const path of pluginSkills) if (!existsSync(join(ROOT, path))) fail('.claude-plugin/marketplace.json', `olmayan yol: ${path}`)
+for (const name of skills) if (!pluginSkills.has(`./skills/${name}`)) fail('.claude-plugin/marketplace.json', `${name} is not listed`)
+for (const path of pluginSkills) if (!existsSync(join(ROOT, path))) fail('.claude-plugin/marketplace.json', `path does not exist: ${path}`)
 
-for (const w of warnings) console.warn(`uyarı  ${w}`)
-for (const e of errors) console.error(`HATA   ${e}`)
-console.log(`\n${skills.length} skill kontrol edildi — ${errors.length} hata, ${warnings.length} uyarı`)
+for (const w of warnings) console.warn(`warn   ${w}`)
+for (const e of errors) console.error(`ERROR  ${e}`)
+console.log(`\n${skills.length} skill(s) checked — ${errors.length} error(s), ${warnings.length} warning(s)`)
 process.exit(errors.length > 0 ? 1 : 0)

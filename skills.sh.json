@@ -4,13 +4,17 @@
   "groupings": [
     {
       "title": "CLI",
-      "description": "EstorePark CLI'ı sürmek: cihaz girişi, mağaza seçimi, tema komutları, --json sözleşmesi ve çıkış kodları.",
-      "skills": ["estorepark-cli"]
+      "description": "Driving the EstorePark CLI: device login, store selection, theme commands, the --json contract and exit codes.",
+      "skills": [
+        "estorepark-cli"
+      ]
     },
     {
-      "title": "Tema",
-      "description": "EstorePark tema bundle'ı yazmak: section, template, region, rota tablosu, i18n ve helper kataloğu.",
-      "skills": ["estorepark-theme"]
+      "title": "Themes",
+      "description": "Writing an EstorePark theme bundle: sections, templates, regions, the route table, i18n and the helper catalogue.",
+      "skills": [
+        "estorepark-theme"
+      ]
     }
   ]
 }

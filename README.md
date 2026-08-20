@@ -1,59 +1,59 @@
 # EstorePark Agent Skills
 
-[EstorePark](https://estorepark.com) için [Agent Skills](https://agentskills.io) formatında
-skill koleksiyonu. Skill'ler, kod yazan AI ajanlarına (Claude Code, Codex, Cursor, Copilot,
-Gemini CLI, OpenCode…) EstorePark CLI'ını ve tema bundle sözleşmesini **doğru** kullanmayı
-öğretir — ajanın kendiliğinden bilemeyeceği kuralları, tuzakları ve komut sözleşmelerini taşır.
+A collection of [Agent Skills](https://agentskills.io) for [EstorePark](https://estorepark.com).
+The skills teach coding agents (Claude Code, Codex, Cursor, Copilot, Gemini CLI, OpenCode…) how
+to use the EstorePark CLI and the theme bundle contract **correctly** — they carry the rules,
+gotchas and command contracts an agent cannot know on its own.
 
-## Kurulum
+## Install
 
 ```bash
-# Tüm skill'ler, kullandığınız ajana
+# every skill, into the agent you use
 npx skills add Estorepark/skills
 
-# Yalnız bir skill
+# a single skill
 npx skills add Estorepark/skills --skill estorepark-theme
 
-# Belirli ajanlara, soru sormadan (CI)
+# specific agents, no prompts (CI)
 npx skills add Estorepark/skills -a claude-code -y
 ```
 
-Kurmadan tek seferlik kullanmak için:
+Use one without installing:
 
 ```bash
 npx skills use Estorepark/skills@estorepark-cli | claude
 ```
 
-Claude Code'da plugin olarak da eklenebilir:
+In Claude Code it can also be added as a plugin:
 
 ```
 /plugin marketplace add Estorepark/skills
 ```
 
-Skill'ler ajan bağımsızdır; `SKILL.md` dosyalarını elle kopyalamak da çalışır
-(`.claude/skills/`, `.agents/skills/` … hedefiniz hangisiyse).
+The skills are agent-agnostic; copying the `SKILL.md` files by hand works too — into
+`.claude/skills/`, `.agents/skills/`, or wherever your agent reads them from.
 
-## Skill'ler
+## Skills
 
-| Skill | Ne zaman devreye girer |
-| ----- | ---------------------- |
-| [`estorepark-cli`](skills/estorepark-cli) | `estorepark` komutunu sürmek: cihaz girişi, mağaza seçimi, `theme init/dev/check/package/push/publish/rollback`, `--json` çıktısı, çıkış kodları, CI kullanımı |
-| [`estorepark-theme`](skills/estorepark-theme) | Tema **kodu** yazmak: section/block/template/region dosyaları, `config/routes.json`, gömülü şema, helper kataloğu, i18n |
+| Skill | When it applies |
+| ----- | --------------- |
+| [`estorepark-cli`](skills/estorepark-cli) | Driving the `estorepark` command: device login, store selection, `theme init/dev/check/package/push/publish/rollback`, the `--json` output, exit codes, CI usage |
+| [`estorepark-theme`](skills/estorepark-theme) | Writing theme **code**: section/block/template/region files, `config/routes.json`, embedded schemas, the helper catalogue, i18n |
 
-İkisi ayrı çünkü biri **komutu sürmeyi**, diğeri **tema kodu yazmayı** anlatır; bir işte
-yalnız biri gerekebilir ve içerikleri örtüşmez.
+They are separate because one is about **driving the command** and the other about **writing
+theme code**; a task usually needs only one of them, and their content does not overlap.
 
-## Katkı
+## Contributing
 
-Skill yazım kuralları [AGENTS.md](AGENTS.md)'de. Değişiklikten önce doğrulayıcıyı çalıştırın:
+The rules for writing skills here are in [AGENTS.md](AGENTS.md). Run the validator before every
+change:
 
 ```bash
 node scripts/validate-skills.mjs
 ```
 
-CI aynı script'i koşar; frontmatter, isim kuralları, boyut sınırları ve ölü referans linkleri
-kontrol edilir.
+CI runs the same script: frontmatter, naming rules, size limits and dead reference links.
 
-## Lisans
+## License
 
 [MIT](LICENSE)

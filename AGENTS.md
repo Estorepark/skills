@@ -1,71 +1,76 @@
-# Bu repoda skill nasıl yazılır
+# How to write a skill in this repo
 
-Kaynak: [Agent Skills specification](https://agentskills.io/specification) ve
-[best practices](https://agentskills.io/skill-creation/best-practices). Aşağıdakiler bu
-repoya özel kurallardır — spec'i tekrar etmez, daraltır.
+Sources: the [Agent Skills specification](https://agentskills.io/specification) and its
+[best practices](https://agentskills.io/skill-creation/best-practices). What follows is specific
+to this repo — it does not repeat the spec, it narrows it.
 
-## Değişmezler
+## Invariants
 
-1. **Dizin adı = `name`.** Spec şartı. Dizin `skills/<name>/`, içinde `SKILL.md`.
-2. **`estorepark-` prefix'i zorunlu.** Skill'ler tüketicide düz bir dizine kurulur
-   (`.claude/skills/`, `.agents/skills/`) — isim alanı globaldir. Prefix'siz bir `theme`
-   skill'i başka bir repodan gelenle çakışır.
-3. **`SKILL.md` ≤ 500 satır.** Detay `references/` altına gider ve gövdeden **ne zaman
-   okunacağı** söylenerek referans verilir ("sunucu 4xx dönerse `references/errors.md`'yi oku").
-   Genel "detaylar için references/'a bak" satırı işe yaramaz.
-4. **Dil: gövde İngilizce.** Repo public'tir ve skill'ler ajan-bağımsız tüketilir; gövde
-   İngilizce yazılır. `description` alanı ise **iki dillidir**: aktivasyon tamamen description
-   eşleşmesine bakar, kullanıcılarımız Türkçe prompt yazar → İngilizce "ne + ne zaman"
-   cümlesinin yanına Türkçe tetik ifadeleri de konur. Merchant'ın göreceği örnek değerler
-   (tema `label`/`default` metinleri) mağazanın dilinde yazılır — bu bir istisna değil, örnek
-   verinin doğal dili.
-5. **Gerçek yüzeyden yaz.** Komut, bayrak, hata kodu ve dosya adları CLI/monorepo
-   kaynağından doğrulanarak yazılır. Uydurulmuş bayrak, ajanı deneme-yanılmaya sokar.
-6. **Sır yok.** Token, gerçek mağaza slug'ı, iç altyapı adresi (APISIX route'ları, iç
-   servis host'ları) skill'e girmez. Bu repo public'tir.
+1. **Directory name = `name`.** A spec requirement. The directory is `skills/<name>/` with a
+   `SKILL.md` inside.
+2. **The `estorepark-` prefix is mandatory.** Skills are installed into a flat directory on the
+   consumer side (`.claude/skills/`, `.agents/skills/`) — the namespace is global. An unprefixed
+   `theme` skill would collide with one from another repo.
+3. **`SKILL.md` ≤ 500 lines.** Detail goes into `references/` and is linked from the body with
+   **when to read it** ("read `references/errors.md` if the server returns 4xx"). A generic "see
+   references/ for details" does not work.
+4. **Language: English body.** The repo is public and the skills are consumed agent-agnostically.
+   The `description` field, however, is **bilingual**: activation depends entirely on matching
+   the description and our users write Turkish prompts, so the English "what + when" sentence is
+   followed by Turkish trigger phrases. Merchant-facing example values (theme `label` / `default`
+   strings) are written in the store's language — that is not an exception, it is the natural
+   language of the sample data.
+5. **Write from the real surface.** Commands, flags, error codes and file names are verified
+   against the CLI or monorepo source before they are written down. An invented flag sends the
+   agent into trial and error.
+6. **No secrets.** Tokens, real store slugs and internal infrastructure details (gateway routes,
+   internal service hosts) never enter a skill. This repo is public.
 
-## İçerik önceliği
+## Content priority
 
-En değerli bölüm **Tuzaklar**tır: ajanın makul varsayımının yanlış olduğu yerler
-(`theme push` DRAFT'ı ezer, şema `default`'u render'da uygulanmaz…). Sıradan bilgi
-(bir zip nedir, HTTP nasıl çalışır) yazılmaz.
+The most valuable part is **Gotchas**: the places where a reasonable assumption is wrong
+(`theme push` replaces the DRAFT, a schema `default` is not applied at render time…). Ordinary
+knowledge — what a zip is, how HTTP works — is not written down.
 
-Bir düzeltme yaptığınızda — ajan bir işi yanlış yaptı, siz düzelttiniz — düzeltmeyi ilgili
-skill'in Tuzaklar bölümüne ekleyin. Skill'i iyileştirmenin en doğrudan yolu budur.
+When you correct an agent that got something wrong, add the correction to the relevant skill's
+Gotchas section. It is the most direct way to improve a skill.
 
 ## Frontmatter
 
-Spec'in izin verdiği alanlar: `name`, `description`, `license`, `compatibility`,
-`metadata`, `allowed-tools`. Bu repoda:
+Fields the spec allows: `name`, `description`, `license`, `compatibility`, `metadata`,
+`allowed-tools`. In this repo:
 
 ```yaml
 ---
-name: estorepark-<konu>
-description: <İngilizce ne + ne zaman>. <Türkçe tetik ifadeleri>.
+name: estorepark-<topic>
+description: <English what + when>. <Turkish trigger phrases>.
 license: MIT
 metadata:
   author: estorepark
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 ```
 
-`version` elle artırılır; `npx skills update` default branch'ten çeker, semver çözümü
-yoktur → `main` her an yayınlanabilir olmalı.
+Beware of YAML: an unquoted scalar cannot contain `": "` — the parser reads it as a nested
+mapping and the skill is **skipped silently**. The validator catches this.
 
-## Doğrulama
+`version` is bumped by hand; `npx skills update` pulls from the default branch and does no
+semver resolution, so `main` must always be releasable.
+
+## Validation
 
 ```bash
 node scripts/validate-skills.mjs
 ```
 
-Kontrol ettikleri: frontmatter varlığı/alanları, `name` regex + dizin eşleşmesi,
-`description` uzunluğu, `SKILL.md` satır sayısı, gövdedeki relative linklerin varlığı,
-`skills.sh.json` ve `.claude-plugin/marketplace.json`'ın her skill'i kapsaması.
+What it checks: frontmatter presence and fields, the `name` regex and its match with the
+directory, description length, `SKILL.md` line count, that relative links in the body exist, and
+that `skills.sh.json` and `.claude-plugin/marketplace.json` cover every skill.
 
-## Yeni skill eklerken
+## Adding a new skill
 
-1. `skills/estorepark-<ad>/SKILL.md` oluştur.
-2. `skills.sh.json` içindeki uygun gruba adı ekle (yoksa yeni grup).
-3. `.claude-plugin/marketplace.json` → `plugins[0].skills` listesine yolu ekle.
-4. README tablosuna bir satır.
-5. `node scripts/validate-skills.mjs`.
+1. Create `skills/estorepark-<name>/SKILL.md`.
+2. Add the name to the right group in `skills.sh.json` (or create a group).
+3. Add the path to `plugins[0].skills` in `.claude-plugin/marketplace.json`.
+4. Add a row to the README table.
+5. Run `node scripts/validate-skills.mjs`.
