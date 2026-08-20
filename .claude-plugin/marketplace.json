@@ -1,0 +1,19 @@
+{
+  "name": "estorepark-skills",
+  "owner": {
+    "name": "Estorepark"
+  },
+  "metadata": {
+    "description": "EstorePark CLI ve tema geliştirme için agent skill'leri",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "estorepark",
+      "description": "EstorePark CLI kullanımı ve tema bundle geliştirme skill'leri",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/estorepark-cli", "./skills/estorepark-theme"]
+    }
+  ]
+}

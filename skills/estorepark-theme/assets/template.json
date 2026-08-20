@@ -1,0 +1,18 @@
+{
+  "layout": "theme",
+  "sections": {
+    "main": {
+      "type": "my-section",
+      "settings": {
+        "heading": "Başlık",
+        "body": "Açıklama metni",
+        "show_border": false
+      },
+      "blocks": {
+        "b1": { "type": "text", "settings": { "content": "İlk blok" } }
+      },
+      "block_order": ["b1"]
+    }
+  },
+  "order": ["main"]
+}

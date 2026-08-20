@@ -1,0 +1,16 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "CLI",
+      "description": "EstorePark CLI'ı sürmek: cihaz girişi, mağaza seçimi, tema komutları, --json sözleşmesi ve çıkış kodları.",
+      "skills": ["estorepark-cli"]
+    },
+    {
+      "title": "Tema",
+      "description": "EstorePark tema bundle'ı yazmak: section, template, region, rota tablosu, i18n ve helper kataloğu.",
+      "skills": ["estorepark-theme"]
+    }
+  ]
+}
