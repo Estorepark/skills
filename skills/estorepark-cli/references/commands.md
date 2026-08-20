@@ -1,89 +1,91 @@
-# Komut ve bayrak referansı
+# Command and flag reference
 
-`estorepark --help` çıktısının açıklamalı hâli. Komut adları ve bayraklar birebir bunlardır;
-listede olmayan bir bayrak `UNKNOWN_FLAG` ile çıkış 2 verir.
+An annotated version of `estorepark --help`. Command names and flags are exactly these; a flag
+that is not on this list exits 2 with `UNKNOWN_FLAG`.
 
-## Oturum
+## Session
 
-| Komut | Ne yapar |
-| ----- | -------- |
-| `estorepark login` | Tarayıcıdan onaylanan cihaz girişi (OAuth2 device flow). Parola CLI'dan geçmez. Ajan bu akışı tamamlayamaz — kod kullanıcıya gösterilir. |
-| `estorepark logout` | Yerel oturumu siler |
-| `estorepark whoami` | Oturum + erişilebilen mağaza sayısı |
+| Command | What it does |
+| ------- | ------------ |
+| `estorepark login` | Device login approved in a browser (OAuth2 device flow). The password never passes through the CLI. An agent cannot complete this flow — the code is shown to the user. |
+| `estorepark logout` | Deletes the local session |
+| `estorepark whoami` | Session + number of reachable stores |
 
-## Mağaza
+## Store
 
-| Komut | Ne yapar |
-| ----- | -------- |
-| `estorepark store list` | Erişilebilen mağazalar |
-| `estorepark store use <slug>` | Aktif mağazayı seçer (config'e yazılır) |
+| Command | What it does |
+| ------- | ------------ |
+| `estorepark store list` | Stores the account can reach |
+| `estorepark store use <slug>` | Selects the active store (written to config) |
 
-Login **platform seviyesindedir**; hangi mağazada çalışılacağı CLI'dan seçilir. Yetki sınırını
-mağazadaki staff izinleri çizer. Tek komutluk sapma için `--store <slug>` yeterlidir, aktif
-mağazayı değiştirmek gerekmez.
+Login is **platform level**; which store you work on is chosen in the CLI. The permission
+boundary comes from the staff permissions on that store. For a one-off deviation `--store <slug>`
+is enough — you do not need to change the active store.
 
-## Tema
+## Theme
 
-| Komut | Ne yapar | Ağ |
-| ----- | -------- | -- |
-| `theme init` | Klasörü bir temaya bağlar (`.estorepark/theme.json`) + DRAFT dosyalarını indirir | ✔ |
-| `theme list` | Mağazanın temaları | ✔ |
-| `theme dev` | Yerel proxy (varsayılan `localhost:9292`): render sunucuda gerçek tenant verisiyle olur, dosyalar yerelden gider | ✔ |
-| `theme preview` | Tek seferlik önizleme URL'i (proxy yok) | ✔ |
-| `theme check` | Yerel yapısal doğrulama | ✘ |
-| `theme package` | Deterministik zip üretir (varsayılan `.estorepark/theme.zip`) | ✘ |
-| `theme push` | Yükler ve DRAFT olarak indeksler — **yayınlamaz**, DRAFT'ı ezer | ✔ |
-| `theme publish` | DRAFT'ı yayınlar VE canlı yapar — onay ister | ✔ |
-| `theme versions` | Yayın geçmişi (`--limit` / `--offset`, varsayılan 20 / 0) | ✔ |
-| `theme rollback --version N` | Eski bir sürümü tekrar canlı yapar — onay ister | ✔ |
-| `theme pull` | DRAFT dosyalarını diske yazar | ✔ |
+| Command | What it does | Network |
+| ------- | ------------ | ------- |
+| `theme init` | Binds the folder to a theme (`.estorepark/theme.json`) + downloads the DRAFT files | ✔ |
+| `theme list` | Themes of the store | ✔ |
+| `theme dev` | Local proxy (default `localhost:9292`): rendering happens on the server with real tenant data while files are served from disk | ✔ |
+| `theme preview` | One-shot preview URL (no proxy) | ✔ |
+| `theme check` | Local structural validation | ✘ |
+| `theme package` | Produces a deterministic zip (default `.estorepark/theme.zip`) | ✘ |
+| `theme push` | Uploads and indexes as DRAFT — **does not publish**, replaces the DRAFT | ✔ |
+| `theme publish` | Publishes the DRAFT AND makes it live — asks for confirmation | ✔ |
+| `theme versions` | Release history (`--limit` / `--offset`, defaults 20 / 0) | ✔ |
+| `theme rollback --version N` | Makes an older version live again — asks for confirmation | ✔ |
+| `theme pull` | Writes the DRAFT files to disk | ✔ |
 
-`theme dev` sırasında `assets/` altındaki dosyalar **doğrudan yerel klasörden** servis edilir
-(görsel ve fontlar dahil); önizleme session'ı yalnız metin taşıdığı için binary asset'ler
-sunucuya gitmez. Yerelde olmayan bir asset sunucudaki DRAFT'tan gelir.
+During `theme dev` the files under `assets/` are served **straight from the local folder**
+(images and fonts included); the preview session only carries text, so binary assets never
+reach the server. An asset missing locally comes from the DRAFT on the server.
 
-`theme package --out` çıktısını tema klasörünün İÇİNE yazarsanız üretilen zip bir sonraki
-pakete gömülür; CLI bunu `OUTPUT_INSIDE_THEME` uyarısıyla bildirir. Varsayılan
-`.estorepark/theme.zip` pakete girmez.
+`theme package --out` writing into the theme folder gets the produced zip bundled into the next
+package; the CLI reports this with the `OUTPUT_INSIDE_THEME` warning. The default
+`.estorepark/theme.zip` avoids the trap.
 
-`theme check` yapısal bulguların yanında **binary asset listesi** de döndürür: bu dosyalar
-`theme dev` önizlemesinde görünmez (önizleme yalnız metin taşır), yerelden servis edilirler.
+`theme check` also returns a **list of binary assets** alongside structural findings: those
+files do not appear in the `theme dev` preview (the preview carries text only), they are served
+from disk.
 
-`theme init` argümansız çağrılınca TTY'de tema seçim listesi açar; liste kapalıyken mağazanın
-canlı temasını seçer ve hangisini seçtiğini stderr'e yazar.
+Called with no argument, `theme init` opens a theme picker on a TTY; when the picker is closed
+it selects the store's live theme and writes which one it picked to stderr.
 
-## Bayraklar
+## Flags
 
-| Bayrak | Anlamı |
-| ------ | ------ |
-| `--store <slug>` | Mağaza (varsayılan: `store use` ile seçilen) |
-| `--theme <id>` | Tema (varsayılan: `.estorepark/theme.json`) |
-| `--dir <yol>` | Tema klasörü (varsayılan: bulunulan dizin) |
-| `--port <n>` | `theme dev` yerel portu (varsayılan 9292) |
-| `--name <ad>` | `theme init` ile yeni tema adı |
-| `--out <dosya>` | `theme package` çıktı yolu |
-| `--version <n>` | `theme rollback` hedef sürümü |
-| `--limit <n>` `--offset <n>` | `theme versions` sayfalama |
-| `--json` | Makine-okur çıktı (stdout'ta tek JSON dokümanı) |
-| `--quiet` | Yalnız hataları bas |
-| `--no-input` | İnteraktif yüzeyi kapat (CI). `CI=1` ile aynı etki. |
-| `--yes` | Canlıyı etkileyen işlemleri sormadan onayla (`publish`, `rollback`) |
-| `--api <url>` `--accounts <url>` | Ortam kökleri (env: `ESTOREPARK_API_BASE` / `ESTOREPARK_ACCOUNTS_BASE`) |
-| `-h, --help` | Yardım |
-| `--version` | CLI sürümü (komut verilmediğinde; `--version-cli` eş anlamlı) |
+| Flag | Meaning |
+| ---- | ------- |
+| `--store <slug>` | Store (default: the one selected with `store use`) |
+| `--theme <id>` | Theme (default: `.estorepark/theme.json`) |
+| `--dir <path>` | Theme folder (default: current directory) |
+| `--port <n>` | Local port for `theme dev` (default 9292) |
+| `--name <name>` | New theme name for `theme init` |
+| `--out <file>` | Output path for `theme package` |
+| `--version <n>` | Target version for `theme rollback` |
+| `--limit <n>` `--offset <n>` | Paging for `theme versions` |
+| `--json` | Machine-readable output (a single JSON document on stdout) |
+| `--quiet` | Print errors only |
+| `--no-input` | Disable interactive surfaces (CI). A non-empty `CI` variable does the same. |
+| `--yes` | Approve live-changing operations without asking (`publish`, `rollback`) |
+| `--api <url>` `--accounts <url>` | Environment roots (env: `ESTOREPARK_API_BASE` / `ESTOREPARK_ACCOUNTS_BASE`) |
+| `-h, --help` | Help |
+| `--version` | CLI version (when no command is given; `--version-cli` is a synonym) |
 
-`--version` iki anlamlıdır: komutsuz çağrıda CLI sürümünü basar, `theme rollback` ile hedef
-sürüm numarasıdır.
+`--version` is overloaded: with no command it prints the CLI version, with `theme rollback` it
+is the target version number.
 
-## İnteraktif yüzeyler
+## Interactive surfaces
 
-Yalnız stdout **ve** stdin birlikte TTY iken ve gerekli argüman verilmemişken açılır.
+They only open when stdout **and** stdin are both TTYs, the required argument is missing, and
+neither `--no-input`, `--json`, nor a non-empty `CI` variable is present.
 
-| Komut | Eksik olan | Kaçış bayrağı |
-| ----- | ---------- | ------------- |
-| `store use` | mağaza | `<slug>` ∨ `--store <slug>` |
-| `theme init` | tema | `--theme <id>` ∨ `--name "<ad>"` |
-| `theme rollback` | sürüm | `--version <n>` |
+| Command | What is missing | Escape flag |
+| ------- | --------------- | ----------- |
+| `store use` | store | `<slug>` or `--store <slug>` |
+| `theme init` | theme | `--theme <id>` or `--name "<name>"` |
+| `theme rollback` | version | `--version <n>` |
 
-Listede `↑↓` gez · `Enter` seç · `1-9` doğrudan seç · `/` filtrele · `Esc` iptal. İptal,
-argüman verilmemiş gibi davranır (çıkış 2).
+In the picker: `↑↓` move · `Enter` select · `1-9` jump · `/` filter · `Esc` cancel. Cancelling
+behaves like a missing argument (exit 2).

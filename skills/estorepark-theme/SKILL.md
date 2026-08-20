@@ -1,44 +1,45 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, and i18n. EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle" gibi isteklerde kullan. Temayı yüklemek/yayınlamak için estorepark-cli skill'ini kullan.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, and i18n. EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
 license: MIT
-compatibility: EstorePark V2 (vitrine) render motoru. Doğrulama için `estorepark theme check` gerekir.
+compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
-# EstorePark tema bundle'ı
+# The EstorePark theme bundle
 
-Tema, versiyonlanmış bir **dosya bundle'ıdır**; kaynağın doğrusu diskteki klasördür. Render
-sunucuda, izomorfik bir Handlebars türevi motorla yapılır. Bu skill dosyaları **yazmayı**
-anlatır; yükleme/yayınlama için `estorepark-cli`.
+A theme is a versioned **file bundle**; the folder on disk is the source of truth. Rendering
+happens on the server with an isomorphic Handlebars derivative. This skill covers **writing**
+the files; for uploading and publishing use `estorepark-cli`.
 
-## Dizin yapısı
+## Directory layout
 
 ```
-tema/
-├── config/routes.json          # ZORUNLU — URL tablosu
-├── config/settings_schema.json # tema geneli ayar formu
-├── config/settings_data.json   # o ayarların değerleri
-├── layout/theme.vitrine        # ZORUNLU — sayfa iskeleti
-├── templates/<ad>.json         # her rota hedefi için bir dosya
-├── sections/<tip>.vitrine      # band düzeyi bileşen (+ gömülü şema)
-├── blocks/<tip>.vitrine        # section içi tekrar eden birim
-├── regions/<ad>.json           # header/footer gibi sayfa-üstü bölgeler
-├── snippets/*.vitrine          # partial
-├── locales/<dil>.default.json  # çeviriler
-└── assets/                     # css/js/görsel
+theme/
+├── config/routes.json          # REQUIRED — URL table
+├── config/settings_schema.json # theme-wide settings form
+├── config/settings_data.json   # values for those settings
+├── layout/theme.vitrine        # REQUIRED — page shell
+├── templates/<name>.json       # one file per route target
+├── sections/<type>.vitrine     # band-level component (+ embedded schema)
+├── blocks/<type>.vitrine       # repeating unit inside a section
+├── regions/<name>.json         # page-level regions such as header/footer
+├── snippets/*.vitrine          # partials
+├── locales/<lang>.default.json # translations
+└── assets/                     # css/js/images
 ```
 
-Yapısal doğrulama: `estorepark theme check` — `config/routes.json` yoksa/parse edilmiyorsa,
-`layout/theme.vitrine` yoksa ya da bir rota olmayan bir `templates/<ad>.json`'u işaret ediyorsa
-hata verir.
+Structural validation: `estorepark theme check` — it fails when `config/routes.json` is missing
+or unparseable, when `layout/theme.vitrine` is missing, or when a route points at a
+`templates/<name>.json` that does not exist.
 
-## Section anatomisi
+## Anatomy of a section
 
-Bir section tek dosyadır: markup + **gövdeye gömülü şema**. Dosya yalnız **iç** markup'ı
-yazar — dış sarmalayıcıyı (`schema.tag` + `esp-section` + editör attribute'ları) motor üretir.
+A section is one file: markup plus an **embedded schema**. The file writes only the **inner**
+markup — the outer wrapper (`schema.tag` + `esp-section` + editor attributes) is produced by the
+engine.
 
 ```handlebars
 <div class="hero">
@@ -51,7 +52,7 @@ yazar — dış sarmalayıcıyı (`schema.tag` + `esp-section` + editör attribu
   "name": "Hero",
   "tag": "section",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Başlık", "default": "Yeni sezon" }
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New season" }
   ],
   "blocks": [{ "type": "button" }],
   "max_blocks": 2,
@@ -60,100 +61,102 @@ yazar — dış sarmalayıcıyı (`schema.tag` + `esp-section` + editör attribu
 --}}
 ```
 
-Şema alanlarının tamamı ve 22 ayar tipi: [references/sections.md](references/sections.md).
+Every schema field and all setting types: [references/sections.md](references/sections.md).
 
-## Template ve region JSON
+## Template and region JSON
 
-`templates/index.json` — hangi section'ın hangi ayarla, hangi sırayla görüneceği:
+`templates/index.json` — which section appears, with which settings, in which order:
 
 ```json
 {
   "layout": "theme",
   "sections": {
-    "hero": { "type": "hero", "settings": { "heading": "Zamansız gardırop" },
-              "blocks": { "b1": { "type": "button", "settings": { "label": "Keşfet" } } },
+    "hero": { "type": "hero", "settings": { "heading": "Timeless wardrobe" },
+              "blocks": { "b1": { "type": "button", "settings": { "label": "Explore" } } },
               "block_order": ["b1"] },
-    "featured": { "type": "featured-collection", "settings": { "heading": "Öne çıkanlar" } }
+    "featured": { "type": "featured-collection", "settings": { "heading": "Featured" } }
   },
   "order": ["hero", "featured"]
 }
 ```
 
-`regions/header.json` aynı şekildedir, ek olarak `type` + `name` taşır ve layout'tan
-`{{{sections "header"}}}` ile basılır (dosya adı = grup adı). Bilinmeyen grup adı sessizce boş
-render edilir — hata vermez, bu yüzden yazım hatası fark edilmez.
+`regions/header.json` has the same shape plus `type` and `name`, and is emitted from the layout
+with `{{{sections "header"}}}` (the file name is the group name). An unknown group name renders
+as silent emptiness — no error, so a typo goes unnoticed.
 
-## Helper kataloğu (KAPALI)
+## Helper catalogue (CLOSED)
 
-Motorun tanıdığı helper'lar bunlardır; yenisi tema tarafından eklenemez:
+These are the helpers the engine knows; a theme cannot add new ones:
 
 `money` · `image_url` · `asset_url` · `stylesheet_tag` · `script_tag` · `t` / `translate` ·
 `link_to` · `editable` · `editor_attributes` · `block` · `sections`
 
-Yerleşikler: `if` · `unless` · `each` · `with` · `lookup`.
+Built-ins: `if` · `unless` · `each` · `with` · `lookup`.
 
-Bu listede olmayan bir helper (`capitalize`, `date`, `json` …) render'da **çözülmez**. İhtiyaç
-duyulan dönüşümü şablonda değil, veriyi hazırlayan tarafta çözün.
+A helper that is not on this list (`capitalize`, `date`, `json` …) **does not resolve** at
+render time. Solve the transformation where the data is prepared, not in the template.
 
 ## i18n
 
-Metinler daima `default=` ile yazılır:
+Always write copy with `default=`:
 
 ```handlebars
-{{t "cart.empty" default="Sepetiniz boş"}}
+{{t "cart.empty" default="Your cart is empty"}}
 ```
 
-Çözüm sırası: locale anahtarı → `default=` → anahtarın kendisi. Locale dosyası eksik olsa bile
-müşteri doğru metni görür. **İnterpolasyon yoktur** (`{{t "hi" name=x}}` gibi bir yer tutucu
-mekanizması yok) — değişken kısım şablonda ayrı bir eleman olarak basılır.
+Resolution order: locale key → `default=` → the key itself. Even with a missing locale file the
+customer sees the right text. **There is no interpolation** (no placeholder mechanism such as
+`{{t "hi" name=x}}`) — a variable part is emitted as a separate element in the template.
 
-Dosya seçimi: `locales/{locale}.default.json` → `{locale}.json` → `{dil}.default.json` →
-`{dil}.json`. **İlk bulunan kazanır, merge yoktur.**
+File selection: `locales/{locale}.default.json` → `{locale}.json` → `{lang}.default.json` →
+`{lang}.json`. **First match wins, there is no merge.**
 
-## Rota tablosu
+## Route table
 
-`config/routes.json` bu temanın URL'lerini tanımlar; platform tarafındaki rezerve yollar
-dışında merchant'ındır. Alanlar ve örnekler: [references/routes.md](references/routes.md).
+`config/routes.json` defines this theme's URLs; apart from the platform-reserved paths they
+belong to the merchant. Fields and examples: [references/routes.md](references/routes.md).
 
-## Tuzaklar
+## Gotchas
 
-- **Şemadaki `default` render'da UYGULANMAZ.** `default`, editör metadata'sıdır. Render yalnız
-  `templates/*.json` ∨ `regions/*.json` içindeki `settings`'i okur. `{"type":"checkbox",
-  "id":"show_note","default":true}` tanımlı olsa bile template JSON'unda `"show_note": true`
-  yoksa `{{#if section.settings.show_note}}` bloğu **hiç render edilmez**. Yeni section eklerken
-  varsayılanları template/region JSON'una da yazın.
-- **Ayar `id`'si `^[a-z][a-z0-9_]*$` olmalı.** Tireli id (`hero-title`) Handlebars'ta
-  **çıkarma işlemi** olarak ayrışır → sessiz bozulma, hata yok, boş çıktı.
-- **`/cart` ve `/cart/*` platform-rezervedir.** Bundle aynı yolu tanımlasa bile platform
-  route'u kazanır. Sepet **sayfası** ise temanındır: `templates/cart.json` + `routes.json`'da
-  `template: "cart"` exact rotası (varsayılan temada `/sepet`). Sepet formlarını kendi
-  uydurduğunuz bir yola değil, platform uçlarına gönderin.
-- **Rezerve head'ler:** `api`, `admin`, `graphql`, `assets`, `_next`, `.well-known`,
-  `checkout`, `cart`. Bir rotanın ilk segmenti bunlardan biri olamaz.
-- **`theme init` / `theme pull` binary asset indirmez** (sunucu yalnız metin döndürür).
-  Yerelde eksik görselle `theme push` yaparsanız sunucudaki asset'ler silinir — bkz.
-  `estorepark-cli` skill'indeki `DRAFT_REPLACED` uyarısı.
-- **Bilinmeyen section tipi çökmez, atlanır.** Template JSON'unda `sections/<tip>.vitrine`
-  karşılığı olmayan bir `type` sessizce render edilmez. Boş çıkan bir bölgede önce tip adını
-  ve dosya adını karşılaştırın.
-- **Render deterministiktir.** Motor helper'ları saf ve deterministiktir; şablon çıktısı
-  sunucu ve tarayıcıda birebir aynı olmalıdır. Tema tarafında tarih/locale'e göre değişen
-  çıktı üretmeye çalışmayın.
+- **A schema `default` is NOT applied at render time.** `default` is editor metadata. Rendering
+  reads only the `settings` written in `templates/*.json` or `regions/*.json`. Even with
+  `{"type":"checkbox","id":"show_note","default":true}` declared, if the template JSON does not
+  contain `"show_note": true` the `{{#if section.settings.show_note}}` block **never renders**.
+  When adding a section, write the defaults into the template/region JSON as well.
+- **A setting `id` must match `^[a-z][a-z0-9_]*$`.** A hyphenated id (`hero-title`) parses as a
+  **subtraction expression** in Handlebars → silent breakage, no error, empty output.
+- **`/cart` and `/cart/*` are platform-reserved.** Even if the bundle declares the same path,
+  the platform route wins. The cart **page** is the theme's own: `templates/cart.json` plus an
+  exact route with `template: "cart"` in `routes.json` (`/sepet` in the default theme). Post
+  cart forms to the platform endpoints, not to a path you invent.
+- **Reserved heads:** `api`, `admin`, `graphql`, `assets`, `_next`, `.well-known`, `checkout`,
+  `cart`. The first segment of a route cannot be one of these.
+- **`theme init` / `theme pull` do not download binary assets** (the server returns text only).
+  Running `theme push` while images are missing locally deletes the assets on the server — see
+  the `DRAFT_REPLACED` warning in the `estorepark-cli` skill.
+- **An unknown section type does not crash, it is skipped.** A `type` in template JSON with no
+  matching `sections/<type>.vitrine` renders nothing, silently. When a region comes out empty,
+  first compare the type name against the file name.
+- **Rendering is deterministic.** Engine helpers are pure and deterministic; template output
+  must be byte-identical on the server and in the browser. Do not try to produce output that
+  varies with the current date or locale.
 
-## Yeni section eklemek
+## Adding a new section
 
-1. `assets/section-template.vitrine` dosyasını `sections/<tip>.vitrine` olarak kopyalayın —
-   markup + gömülü şema iskeleti hazırdır.
-2. Şemadaki `name`, `settings` ve `blocks`'u işe göre düzenleyin (`id` kuralı: `^[a-z][a-z0-9_]*$`).
-3. Bölümü bir şablona bağlayın: `assets/template.json` örneğindeki gibi `sections` + `order`
-   girdisi ekleyin — **ayar değerlerini burada yazın**, şemadaki `default` render'a girmez.
-4. `estorepark theme check`, sonra `estorepark theme dev` ile bakın.
+1. Copy `assets/section-template.vitrine` to `sections/<type>.vitrine` — the markup and embedded
+   schema skeleton are ready.
+2. Adjust `name`, `settings` and `blocks` for the job (id rule: `^[a-z][a-z0-9_]*$`). Labels and
+   defaults are merchant-facing: write them in the store's language.
+3. Bind the section to a template: add a `sections` + `order` entry as in the
+   `assets/template.json` example — **write the setting values there**, a schema `default` never
+   reaches the renderer.
+4. Run `estorepark theme check`, then look at it with `estorepark theme dev`.
 
-## Doğrulama döngüsü
+## Validation loop
 
-1. `estorepark theme check` — yapısal hataları yakalar (ağa çıkmaz).
-2. `estorepark theme dev` — gerçek veriyle canlı önizleme.
-3. Bir bölge boş çıkıyorsa sırayla bak: girdide `"disabled": true` var mı → `order` dizisinde
-   id geçiyor mu → section dosya adı `type` ile aynı mı (varyant kullanılıyorsa
-   `sections/[<type>]/<variant>.vitrine` var mı) → template JSON'da `settings` yazılı mı
-   (şema `default`'u sayılmaz).
+1. `estorepark theme check` — catches structural errors (offline).
+2. `estorepark theme dev` — live preview with real data.
+3. When a region comes out empty, check in order: does the entry have `"disabled": true` → is
+   the id listed in `order` → does the section file name match `type` (and with variants, does
+   `sections/[<type>]/<variant>.vitrine` exist) → are the `settings` written in the template JSON
+   (a schema `default` does not count).

@@ -1,7 +1,7 @@
 # `config/routes.json`
 
-Temanın URL tablosu. `theme check` bu dosyanın varlığını ve bir rota dizisi içerdiğini
-doğrular; işaret ettiği her `template` için `templates/<ad>.json` bulunmalıdır.
+The theme's URL table. `theme check` verifies that the file exists and contains a route array,
+and that a `templates/<name>.json` exists for every `template` it points at.
 
 ```json
 {
@@ -24,38 +24,42 @@ doğrular; işaret ettiği her `template` için `templates/<ad>.json` bulunmalı
 }
 ```
 
-## Alanlar
+The paths above are the ones shipped by the default theme; they are Turkish because the store
+front is. Paths are the merchant's to choose — template names are not.
 
-| Alan | Değerler | Not |
-| ---- | -------- | --- |
-| `path` | `/…` | Merchant'ın seçtiği yol; Türkçe olabilir |
-| `match` | `exact` · `prefix` | `prefix` = kaynak detay URL'lerinin kökü |
-| `kind` | `home` · `resource` · `system` · `page` | Rota sınıfı |
-| `resource` | `product` · `collection` · `category` · `blog` | Yalnız metadata/UI; dispatch **`template`'ten** yapılır |
-| `template` | `templates/<ad>.json` | Detay şablonu |
-| `indexTemplate` | `templates/<ad>.json` | `prefix` rotalarında liste şablonu |
-| `previousPaths` | string[] | Eski yollar → 301 kaynağı; `path` yeniden adlandırılınca doldurulur |
-| `enabled` | boolean | `false` ise rota yok sayılır |
+## Fields
 
-Kaynak eşlemesi birincil olarak `template` adından türetilir: `product` → ürün,
-`collection` → koleksiyon, `category` → kategori, **`article` → blog** (blog kaynağının
-DETAYI `article`, listesi `blog`).
+| Field | Values | Note |
+| ----- | ------ | ---- |
+| `path` | `/…` | The path the merchant chose |
+| `match` | `exact` · `prefix` | `prefix` = the root of a resource's detail URLs |
+| `kind` | `home` · `resource` · `system` · `page` | Route class |
+| `resource` | `product` · `collection` · `category` · `blog` | Metadata/UI only; dispatch happens **from `template`** |
+| `template` | `templates/<name>.json` | Detail template |
+| `indexTemplate` | `templates/<name>.json` | List template, on `prefix` routes |
+| `previousPaths` | string[] | Old paths → source of 301s; filled in when `path` is renamed |
+| `enabled` | boolean | `false` means the route is ignored |
 
-## Rezerve yollar
+The resource mapping is derived primarily from the template name: `product` → product,
+`collection` → collection, `category` → category, and **`article` → blog** (the detail template
+of the blog resource is `article`, its list is `blog`).
 
-Bir rotanın ilk segmenti şunlar olamaz:
+## Reserved paths
+
+The first segment of a route cannot be any of:
 
 `api` · `admin` · `graphql` · `assets` · `_next` · `.well-known` · `checkout` · `cart`
 
-`/cart` ve `/cart/*` **platform sepet uçlarıdır**; bundle aynı yolu tanımlasa bile statik
-route kazanır. Sepet **sayfası** temanındır ve `template: "cart"` exact rotasından türetilir —
-yukarıdaki örnekte `/sepet`. Yol adını değiştirmek serbesttir, `template` adı değildir.
+`/cart` and `/cart/*` are the **platform cart endpoints**; even if the bundle declares the same
+path, the static route wins. The cart **page** belongs to the theme and is derived from the
+exact route with `template: "cart"` — `/sepet` in the example above.
 
-## Şablon adları
+## Template names
 
-`templates/` altındaki dosya adı = rota tablosundaki `template` değeri. Varsayılan temada:
-`index`, `product`, `product_index`, `collection`, `collection_index`, `category`,
+The file name under `templates/` equals the `template` value in the route table. In the default
+theme: `index`, `product`, `product_index`, `collection`, `collection_index`, `category`,
 `category_index`, `blog`, `article`, `cart`, `search`, `account`, `account.settings`,
 `page.<slug>`.
 
-Nokta içeren adlar tek dosyadır: `templates/account.settings.json`, `templates/page.hakkimizda.json`.
+Names containing dots are single files: `templates/account.settings.json`,
+`templates/page.hakkimizda.json`.

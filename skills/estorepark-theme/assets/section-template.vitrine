@@ -14,21 +14,21 @@
 {{!-- schema
 {
   "$schema": "estorepark/section-schema/v0",
-  "name": "Yeni bölüm",
+  "name": "New section",
   "tag": "section",
   "class": "my-section-wrapper",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Başlık", "default": "Başlık" },
-    { "type": "textarea", "id": "body", "label": "Metin" },
-    { "type": "select", "id": "width", "label": "Genişlik", "default": "contained",
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Heading" },
+    { "type": "textarea", "id": "body", "label": "Text" },
+    { "type": "select", "id": "width", "label": "Width", "default": "contained",
       "options": [
-        { "value": "contained", "label": "Sınırlı" },
-        { "value": "full", "label": "Tam genişlik" },
-        { "value": "narrow", "label": "Dar" }
+        { "value": "contained", "label": "Contained" },
+        { "value": "full", "label": "Full width" },
+        { "value": "narrow", "label": "Narrow" }
       ] }
   ],
   "blocks": [{ "type": "text" }],
   "max_blocks": 6,
-  "presets": [{ "name": "Yeni bölüm" }]
+  "presets": [{ "name": "New section" }]
 }
 --}}

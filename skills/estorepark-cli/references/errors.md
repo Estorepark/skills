@@ -1,63 +1,63 @@
-# Hata kodları
+# Error codes
 
-`--json` gövdesindeki `error.code` değerleri, kaynaktaki `EXIT` eşlemesiyle birlikte.
-Çıkış kodu ile hata kodu **ayrı eksenlerdir**; ikisini birlikte okuyun.
+The `error.code` values in the `--json` body, together with the `EXIT` mapping from the source.
+The exit code and the error code are **separate axes**; read both.
 
-> Sezgiye aykırı olan: **"veri yok" durumları çıkış 2'dir** (`NO_STORES`, `NO_VERSIONS`,
-> `VERSION_NOT_FOUND`) — CLI bunları "komutu böyle çağıramazsın" sayar, "çalıştı ama
-> olumsuz" değil.
+> Counter-intuitive: **"no data" situations exit with 2** (`NO_STORES`, `NO_VERSIONS`,
+> `VERSION_NOT_FOUND`). The CLI treats them as "you cannot call the command like this", not as
+> "it ran and the outcome was negative".
 
-## Kimlik / yetki — çıkış 3
+## Identity / authorization — exit 3
 
-| Kod | Anlamı | Ne yapmalı |
-| --- | ------ | ---------- |
-| `NOT_LOGGED_IN` | Yerel oturum yok | Kullanıcıdan `estorepark login` isteyin — tarayıcı onayını ajan yapamaz |
-| `UNAUTHENTICATED` / `UNAUTHORIZED` | Token geçersiz ∨ süresi dolmuş | Yeniden login |
-| `FORBIDDEN` | Yetki yetersiz | Kullanıcının o mağazadaki staff izinleri yetmiyor |
-| `INSUFFICIENT_SCOPE` | Token kapsamı yetersiz | CLI token'ı yalnız tema scope'ları taşır; ürün/sipariş/müşteri/ayar yüzeyi başka komutla da açılmaz |
-| `ACCESS_DENIED` | Kullanıcı tarayıcıda onayı reddetti | Tekrar `login` |
-| `LOGIN_FAILED` | Device flow sunucu tarafında başarısız | Ortam/erişim sorunu; tekrar deneyin |
-| `CODE_EXPIRED` | Onay kodu süresinde girilmedi | Tekrar `login` |
+| Code | Meaning | What to do |
+| ---- | ------- | ---------- |
+| `NOT_LOGGED_IN` | No local session | Ask the user to run `estorepark login` — an agent cannot complete the browser approval |
+| `UNAUTHENTICATED` / `UNAUTHORIZED` | Token invalid or expired | Log in again |
+| `FORBIDDEN` | Insufficient permission | The user's staff permissions on that store are not enough |
+| `INSUFFICIENT_SCOPE` | Token scope insufficient | The CLI token only carries theme scopes; product/order/customer/settings surfaces cannot be reached with another command either |
+| `ACCESS_DENIED` | The user denied approval in the browser | Run `login` again |
+| `LOGIN_FAILED` | Device flow failed server-side | Environment/access problem; retry |
+| `CODE_EXPIRED` | The approval code was not entered in time | Run `login` again |
 
-## Kullanım hatası — çıkış 2
+## Usage error — exit 2
 
-| Kod | Anlamı | Ne yapmalı |
-| --- | ------ | ---------- |
-| `MISSING_ARGUMENT` | Zorunlu argüman yok (CI'da liste açılamaz) | Argümanı açıkça verin |
-| `INVALID_ARGUMENT` | Biçim yanlış (ör. `--version` pozitif tam sayı değil, bozuk `--limit`) | Değeri düzeltin — CLI sessizce varsayılana düşmez |
-| `UNKNOWN_FLAG` / `UNKNOWN_COMMAND` | Yazım hatası sessizce yutulmaz | `commands.md`'deki listeyle karşılaştırın |
-| `NO_STORE_SELECTED` | Aktif mağaza yok | `estorepark store use <slug>` ∨ `--store <slug>` |
-| `STORE_NOT_FOUND` | Verilen slug erişilebilir mağazalarda yok | `estorepark store list` |
-| `NO_STORES` | Hesabın erişebildiği mağaza yok | CLI tarafında çözüm yok, kullanıcıya bildirin |
-| `NO_THEME` | Klasör bir temaya bağlı değil ∨ tema seçilemedi | `theme init` ∨ `--theme <id>` |
-| `NO_VERSIONS` | Temanın yayın geçmişi yok | Geri alınacak sürüm yok; önce `publish` |
-| `VERSION_NOT_FOUND` | İstenen sürüm geçmişte yok | `theme versions` ile listeleyin |
-| `VERSION_SCAN_TRUNCATED` | Sürüm taraması sayfa tavanına takıldı, hedef bulunamadı | `--limit`/`--offset` ile daraltın |
-| `CONFIRMATION_REQUIRED` | `publish`/`rollback` interaktif olmayan ortamda onaysız çağrıldı | Kullanıcı açıkça isterse `--yes`; kendiliğinden eklemeyin |
-| `PORT_IN_USE` | `theme dev` portu meşgul | `--port <n>` |
-| `ENOENT` | Dosya ∨ dizin yok | `--dir` yolunu kontrol edin |
+| Code | Meaning | What to do |
+| ---- | ------- | ---------- |
+| `MISSING_ARGUMENT` | Required argument missing (no picker in CI) | Pass the argument explicitly |
+| `INVALID_ARGUMENT` | Wrong format (e.g. `--version` not a positive integer, malformed `--limit`) | Fix the value — the CLI does not silently fall back to a default |
+| `UNKNOWN_FLAG` / `UNKNOWN_COMMAND` | Typos are not swallowed | Compare against the list in `commands.md` |
+| `NO_STORE_SELECTED` | No active store | `estorepark store use <slug>` or `--store <slug>` |
+| `STORE_NOT_FOUND` | The given slug is not among the reachable stores | `estorepark store list` |
+| `NO_STORES` | The account can reach no stores | Nothing to fix in the CLI; tell the user |
+| `NO_THEME` | The folder is not bound to a theme, or no theme could be selected | `theme init` or `--theme <id>` |
+| `NO_VERSIONS` | The theme has no release history | Nothing to roll back to; `publish` first |
+| `VERSION_NOT_FOUND` | The requested version is not in the history | List with `theme versions` |
+| `VERSION_SCAN_TRUNCATED` | The version scan hit its page ceiling before finding the target | Narrow it with `--limit` / `--offset` |
+| `CONFIRMATION_REQUIRED` | `publish` / `rollback` called without confirmation in a non-interactive context | Add `--yes` only if the user explicitly asked |
+| `PORT_IN_USE` | The `theme dev` port is busy | `--port <n>` |
+| `ENOENT` | File or directory missing | Check the `--dir` path |
 
-## Komut çalıştı, sonuç olumsuz — çıkış 1
+## Command ran, outcome negative — exit 1
 
-| Kod | Anlamı | Ne yapmalı |
-| --- | ------ | ---------- |
-| `ABORTED` | Onay kutusunda "hayır" | Hiçbir değişiklik yapılmadı; tekrar sormayın |
-| `THEME_INVALID` | Yüklenecek bundle yapısal doğrulamayı geçmedi | `estorepark theme check` çıktısını düzeltin |
-| `UPLOAD_FAILED` | Yükleme HTTP hatası | Ağ/ortam; tekrar deneyin |
-| `PAYLOAD_TOO_LARGE` | Önizleme yükü sınırı aşıyor | Tema metin dosyalarını küçültün |
-| `DEV_MODE_UNAVAILABLE` | Mağaza V2 render motorunda değil ∨ platformda önizleme origin'i tanımlı değil | Ortam koşulu — bayrak denemeyin |
-| `UNSAFE_PATH` | Bundle içinde dizin dışına çıkan yol | Sembolik link / `..` içeren girdiyi kaldırın |
-| `RATE_LIMITED` | 429 | Bekleyin; döngüde tekrar denemeyin |
-| `GRAPHQL_ERROR` | Sunucu iş kuralı reddi | Mesajı kullanıcıya iletin |
-| `INTERNAL_SERVER_ERROR` | 5xx | Ortam sorunu |
-| `BAD_RESPONSE` / `EMPTY_RESPONSE` | Yanıt okunamadı ∨ boş | Genelde yanlış `--api`/`--accounts` kökü ∨ erişilemeyen ortam |
-| `UNEXPECTED` | Sınıflandırılmamış hata | Mesajı olduğu gibi aktarın |
+| Code | Meaning | What to do |
+| ---- | ------- | ---------- |
+| `ABORTED` | "No" at the confirmation box | Nothing was changed; do not ask again |
+| `THEME_INVALID` | The bundle failed structural validation before upload | Fix what `estorepark theme check` reports |
+| `UPLOAD_FAILED` | Upload HTTP failure | Network/environment; retry |
+| `PAYLOAD_TOO_LARGE` | The preview payload exceeds the limit | Shrink the theme's text files |
+| `DEV_MODE_UNAVAILABLE` | The store is not on the V2 render engine, or the platform has no preview origin configured | An environment condition — do not try flags |
+| `UNSAFE_PATH` | A path inside the bundle escapes the directory | Remove the symlink / `..` entry |
+| `RATE_LIMITED` | 429 | Wait; do not retry in a loop |
+| `GRAPHQL_ERROR` | Server-side business rule rejection | Pass the message to the user |
+| `INTERNAL_SERVER_ERROR` | 5xx | Environment problem |
+| `BAD_RESPONSE` / `EMPTY_RESPONSE` | Response unreadable or empty | Usually a wrong `--api` / `--accounts` root, or an unreachable environment |
+| `UNEXPECTED` | Unclassified failure | Relay the message as-is |
 
-## Uyarı kodları (`ok: true`)
+## Warning codes (`ok: true`)
 
-Bunlar hata değildir; başarılı gövdedeki `warnings` dizisinde döner.
+These are not errors; they arrive in the `warnings` array of a successful body.
 
-| Kod | Ne zaman |
-| --- | -------- |
-| `DRAFT_REPLACED` | **Her `theme push`'ta** — DRAFT tamamen değiştirildi |
-| `OUTPUT_INSIDE_THEME` | `theme package --out` çıktısı tema klasörünün İÇİNE yazıldığında — üretilen zip bir sonraki pakete gömülür |
+| Code | When |
+| ---- | ---- |
+| `DRAFT_REPLACED` | On **every `theme push`** — the DRAFT was replaced entirely |
+| `OUTPUT_INSIDE_THEME` | When `theme package --out` writes inside the theme folder — the produced zip would be bundled into the next package |

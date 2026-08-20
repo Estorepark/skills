@@ -1,119 +1,118 @@
-# Bundle dizinleri
+# Bundle directories
 
-Her dizinin ne taşıdığı ve motorun ondan ne beklediği.
+What each directory holds and what the engine expects from it.
 
 ## `config/`
 
-| Dosya | Ne |
-| ----- | -- |
-| `routes.json` | **ZORUNLU.** URL tablosu — bkz. [routes.md](routes.md) |
-| `settings_schema.json` | Tema geneli ayar formu (renk şeması, tipografi, genel tercihler) |
-| `settings_data.json` | O ayarların değerleri; `color_schemes` objesi burada yaşar |
-| `hosted-slots.json` | Platformun kendi sunduğu sayfalardaki (checkout, hesap/auth) slot'lara temanın basacağı bloklar — aşağıya bakın |
+| File | What |
+| ---- | ---- |
+| `routes.json` | **REQUIRED.** URL table — see [routes.md](routes.md) |
+| `settings_schema.json` | Theme-wide settings form (colour scheme, typography, general preferences) |
+| `settings_data.json` | Values for those settings; the `color_schemes` object lives here |
+| `hosted-slots.json` | Blocks the theme contributes to slots on platform-hosted pages (checkout, account/auth) — see below |
 
-`config/` yoksa `theme check` "doğru klasörde misiniz?" uyarısı verir — genelde yanlış dizinden
-çalıştırma işaretidir.
+When `config/` is missing, `theme check` warns "are you in the right folder?" — usually a sign
+of running from the wrong directory.
 
 ## `layout/`
 
-`theme.vitrine` **zorunludur**: `<html>` iskeleti, `{{{sections "header"}}}` /
-`{{{sections "footer"}}}` bölge çağrıları ve içerik yuvası burada. İkinci bir layout
-(`account.vitrine` gibi) eklenebilir; template JSON'unda `"layout": "account"` ile seçilir.
+`theme.vitrine` is **required**: the `<html>` shell, the `{{{sections "header"}}}` /
+`{{{sections "footer"}}}` region calls and the content slot live here. A second layout (such as
+`account.vitrine`) can be added and is selected with `"layout": "account"` in the template JSON.
 
-Layout'lar **zincirlenebilir**: `layout/<ad>.json` sidecar'ı kendi ebeveynini bildirir
-(`layout/account.json` → `{ "layout": "theme" }`), zincir DIŞ→İÇ sarılarak render edilir.
-Template'te `"layout": false` yazarsanız sayfa layout'suz render edilir.
+Layouts can be **chained**: a `layout/<name>.json` sidecar declares its own parent
+(`layout/account.json` → `{ "layout": "theme" }`), and the chain is wrapped outside-in at render
+time. Writing `"layout": false` in a template renders the page without any layout.
 
 ## `templates/`
 
-Rota hedefi başına bir JSON. Şekli:
+One JSON per route target. Shape:
 
 ```json
 { "layout": "theme",
-  "sections": { "<id>": { "type": "<section tipi>", "settings": {},
-                          "blocks": { "<id>": { "type": "<block tipi>", "settings": {} } },
+  "sections": { "<id>": { "type": "<section type>", "settings": {},
+                          "blocks": { "<id>": { "type": "<block type>", "settings": {} } },
                           "block_order": ["<id>"] } },
   "order": ["<id>"] }
 ```
 
-`order` render sırasını belirler; `sections` içinde olup `order`'da olmayan bir id
-**render edilmez**. `settings` yazılmayan bir ayar `undefined`'dır (şema `default`'u
-uygulanmaz).
+`order` sets the render order; an id present in `sections` but missing from `order` is **not
+rendered**. A setting that is not written is `undefined` (a schema `default` is not applied).
 
-Section ve block girdilerinin taşıyabileceği diğer alanlar:
+Other fields a section or block entry may carry:
 
-| Alan | Ne |
-| ---- | -- |
-| `variant` | Layout varyantı — `sections/[<type>]/<variant>.vitrine`; yoksa/boşsa `default.vitrine` |
-| `disabled` | `true` ise o girdi render edilmez (silinmeden gizlemek için) |
-| `block_order` | Blok sırası. **Verilmezse** `blocks` objesinin anahtar sırası kullanılır |
+| Field | What |
+| ----- | ---- |
+| `variant` | Layout variant — `sections/[<type>]/<variant>.vitrine`; absent or empty means `default.vitrine` |
+| `disabled` | `true` means the entry is not rendered (hide without deleting) |
+| `block_order` | Block order. **When absent**, the key order of the `blocks` object is used |
 
-`disabled` bloklar `block_order`'da kalsa bile atlanır.
+Disabled blocks are skipped even if they remain in `block_order`.
 
-## `sections/` ve `blocks/`
+## `sections/` and `blocks/`
 
-`<tip>.vitrine` — dosya adı, template JSON'undaki `type` ile birebir aynı olmalı. Varyantlı
-element köşeli parantezli klasördür (`sections/[site-header]/default.vitrine`), şema
-`default.vitrine`'e gömülüdür ve varyantlar onu paylaşır.
+`<type>.vitrine` — the file name must match the `type` in the template JSON exactly. A
+variant-bearing element is a bracketed folder (`sections/[site-header]/default.vitrine`); the
+schema is embedded in `default.vitrine` and shared by the variants.
 
-Bilinmeyen tip **sessizce atlanır** — çökme yok, boş çıktı var.
+An unknown type is **skipped silently** — no crash, just empty output.
 
 ## `regions/`
 
-`<ad>.json`; layout'tan `{{{sections "<ad>"}}}` ile basılır. Template JSON'undan farkı `type`
-ve `name` alanlarını taşımasıdır:
+`<name>.json`, emitted from the layout with `{{{sections "<name>"}}}`. It differs from a template
+JSON by carrying `type` and `name`:
 
 ```json
-{ "type": "header", "name": "Üst Bilgi",
+{ "type": "header", "name": "Header",
   "sections": { "header": { "type": "site-header", "settings": {}, "static": true } },
   "order": ["header"] }
 ```
 
-`static: true` girdiyi merchant'ın taşıyıp silemeyeceği hâle getirir (ayarı düzenlenebilir).
-Bilinmeyen grup adı sessizce boş render edilir.
+`static: true` makes an entry the merchant cannot move or delete (its settings stay editable).
+An unknown group name renders as silent emptiness.
 
 ## `snippets/`
 
-Partial'lar. Şablondan `{{> snippet-adi}}` ile çağrılır; şema taşımaz.
+Partials, called from a template with `{{> snippet-name}}`. They carry no schema.
 
 ## `locales/`
 
-`<dil>.default.json` (ör. `tr.default.json`). Seçim zinciri:
-`{locale}.default.json` → `{locale}.json` → `{dil}.default.json` → `{dil}.json`.
-**İlk bulunan kazanır — merge yoktur.** Canlı istek bölgeli locale taşıyabilir (`tr-TR`) ama
-temalar dosyayı `tr.default.json` adıyla gönderir; taban dil adımı bu yüzden vardır.
+`<lang>.default.json` (e.g. `tr.default.json`). Selection chain:
+`{locale}.default.json` → `{locale}.json` → `{lang}.default.json` → `{lang}.json`.
+**First match wins — there is no merge.** A live request may carry a regional locale (`tr-TR`)
+while themes ship the file as `tr.default.json`; that is why the base-language step exists.
 
-Metinleri daima `{{t "anahtar" default="Metin"}}` ile yazın: locale dosyası eksik olsa bile
-doğru metin görünür.
+Always write copy as `{{t "key" default="Text"}}`: the right text shows even when the locale file
+is missing.
 
-## `config/hosted-slots.json` ayrıntısı
+## `config/hosted-slots.json` in detail
 
-Checkout ve hesap/giriş sayfaları **platformun** sunduğu yüzeylerdir, temanın rotası değildir.
-Bu dosya o yüzeylerdeki adlandırılmış zone'lara temanın hangi blokları basacağını söyler:
+Checkout and the account/login pages are surfaces **the platform** serves; they are not theme
+routes. This file declares which blocks the theme puts into the named zones on those surfaces:
 
 ```json
 {
   "checkout.announcement": [
-    { "type": "announcement-bar", "settings": { "text": "Güvenli ödeme" } }
+    { "type": "announcement-bar", "settings": { "text": "Secure payment" } }
   ],
-  "auth.footer": [{ "type": "policy-links", "settings": { "link_1_label": "Gizlilik" } }]
+  "auth.footer": [{ "type": "policy-links", "settings": { "link_1_label": "Privacy" } }]
 }
 ```
 
-Tanımlı zone'lar: `checkout.announcement` · `checkout.trust` · `checkout.footer_note` ·
-`auth.announcement` · `auth.footer`. Başka zone adı render'a girmez.
+Defined zones: `checkout.announcement` · `checkout.trust` · `checkout.footer_note` ·
+`auth.announcement` · `auth.footer`. Any other zone name is not rendered.
 
-Blok paleti **sunucu tarafında sınırlıdır** — yalnız şu tipler basılır:
+The block palette is **enforced server-side** — only these types are emitted:
 `announcement-bar` · `rich-text` · `image` · `trust-badges` · `support-contact` ·
-`policy-links`. Listede olmayan bir tip sessizce düşer; geçersiz JSON tüm dosyayı boşa
-indirger.
+`policy-links`. A type outside the list is dropped silently; invalid JSON reduces the whole file
+to nothing.
 
 ## `assets/`
 
-CSS, JS, görsel, font. Şablonda `{{asset_url "theme.css"}}`, `{{stylesheet_tag …}}`,
-`{{script_tag …}}` ile kullanılır.
+CSS, JS, images, fonts. Used from templates with `{{asset_url "theme.css"}}`,
+`{{stylesheet_tag …}}`, `{{script_tag …}}`.
 
-**`theme dev` sırasında `assets/` yerel diskten servis edilir** (görsel/font dahil); ama
-`theme init`/`theme pull` binary asset **indirmez**, çünkü sunucu yalnız metin döndürür. Bu
-asimetri `theme push` ile birleşince sunucudaki asset'leri silebilir — bkz. `estorepark-cli`
-skill'i, `DRAFT_REPLACED`.
+**During `theme dev`, `assets/` is served from local disk** (images and fonts included), but
+`theme init` / `theme pull` **do not download** binary assets, because the server returns text
+only. Combined with `theme push`, that asymmetry can delete the assets on the server — see
+`DRAFT_REPLACED` in the `estorepark-cli` skill.

@@ -13,9 +13,12 @@ repoya özel kurallardır — spec'i tekrar etmez, daraltır.
 3. **`SKILL.md` ≤ 500 satır.** Detay `references/` altına gider ve gövdeden **ne zaman
    okunacağı** söylenerek referans verilir ("sunucu 4xx dönerse `references/errors.md`'yi oku").
    Genel "detaylar için references/'a bak" satırı işe yaramaz.
-4. **Dil: gövde Türkçe, teknik terim İngilizce** (monorepo normu). `description` alanı
-   **iki dilli** yazılır: aktivasyon tamamen description eşleşmesine bakar ve kullanıcılar
-   Türkçe prompt yazar, ajan dokümanları İngilizce tarar.
+4. **Dil: gövde İngilizce.** Repo public'tir ve skill'ler ajan-bağımsız tüketilir; gövde
+   İngilizce yazılır. `description` alanı ise **iki dillidir**: aktivasyon tamamen description
+   eşleşmesine bakar, kullanıcılarımız Türkçe prompt yazar → İngilizce "ne + ne zaman"
+   cümlesinin yanına Türkçe tetik ifadeleri de konur. Merchant'ın göreceği örnek değerler
+   (tema `label`/`default` metinleri) mağazanın dilinde yazılır — bu bir istisna değil, örnek
+   verinin doğal dili.
 5. **Gerçek yüzeyden yaz.** Komut, bayrak, hata kodu ve dosya adları CLI/monorepo
    kaynağından doğrulanarak yazılır. Uydurulmuş bayrak, ajanı deneme-yanılmaya sokar.
 6. **Sır yok.** Token, gerçek mağaza slug'ı, iç altyapı adresi (APISIX route'ları, iç

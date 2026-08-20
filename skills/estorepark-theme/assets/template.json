@@ -4,12 +4,12 @@
     "main": {
       "type": "my-section",
       "settings": {
-        "heading": "Başlık",
-        "body": "Açıklama metni",
+        "heading": "Heading",
+        "body": "Description text",
         "width": "contained"
       },
       "blocks": {
-        "b1": { "type": "text", "settings": { "title": "İlk blok", "body": "Metin", "align": "left" } }
+        "b1": { "type": "text", "settings": { "title": "First block", "body": "Text", "align": "left" } }
       },
       "block_order": ["b1"]
     }

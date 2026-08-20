@@ -1,68 +1,69 @@
-# `--json` çıktı sözleşmesi
+# The `--json` output contract
 
-`--json` altında **stdout tek bir JSON dokümanı taşır.** İlerleme satırları, uyarılar ve
-spinner stderr'e gider. Bu yüzden `estorepark theme list --json | jq` güvenlidir.
+Under `--json`, **stdout carries exactly one JSON document.** Progress lines, warnings and the
+spinner go to stderr. That is why `estorepark theme list --json | jq` is safe.
 
-## Başarı
+## Success
 
 ```json
-{ "ok": true, "...": "komuta özgü gövde" }
+{ "ok": true, "...": "command-specific body" }
 ```
 
-## Hata
+## Error
 
 ```json
 { "ok": false, "error": { "code": "NO_STORE_SELECTED", "message": "mağaza seçilmedi" } }
 ```
 
-Ayrımı **`error.code`** ile yapın; `message` insan içindir ve değişebilir.
-Kod listesi: [errors.md](errors.md).
+Branch on **`error.code`**; `message` is for humans, is written in Turkish, and may change.
+Code list: [errors.md](errors.md).
 
-## `warnings` alanı
+## The `warnings` field
 
-Başarılı gövde (`ok: true`) uyarı taşıyabilir. Varlığını hata sanmayın.
+A success body (`ok: true`) can carry warnings. Do not mistake their presence for a failure.
 
-`theme push` — **koşulsuz**, her çağrıda:
+`theme push` — **unconditional**, on every call:
 
 ```json
-{ "ok": true, "store": "magazam", "themeId": "…", "version": { "contentHash": "…" },
+{ "ok": true, "store": "mystore", "themeId": "…", "version": { "contentHash": "…" },
   "warnings": ["DRAFT_REPLACED"] }
 ```
 
-Alan hiç boş dönmez; script "bu işlem DRAFT'ı tamamen değiştirdi" bilgisine her zaman
-erişebilsin diye koşulsuzdur.
+The field is never empty: it is unconditional so a script can always learn that "this operation
+replaced the DRAFT entirely".
 
-`theme package` — **koşullu**: `--out` çıktısı tema klasörünün içine düşerse
-`warnings: ["OUTPUT_INSIDE_THEME"]` eklenir (üretilen zip bir sonraki pakete gömülür).
-Varsayılan `.estorepark/theme.zip` bu tuzağa düşmez; uyarı yoksa alan da yoktur.
+`theme package` — **conditional**: if the `--out` target lands inside the theme folder,
+`warnings: ["OUTPUT_INSIDE_THEME"]` is added (the produced zip would be bundled into the next
+package). The default `.estorepark/theme.zip` does not trip it; with no warning the field is
+absent.
 
-## `theme dev` — uzun ömürlü komut
+## `theme dev` — a long-running command
 
-`theme dev --json`, proxy dinlemeye başladığı anda **tek bir "hazır" dokümanı** basar, sonra
-çalışmaya devam eder. Süreç bitmediği için stdout'a EOF gelmez.
+`theme dev --json` prints a single "ready" document the moment the proxy starts listening, then
+keeps running. Because the process does not exit, stdout never reaches EOF.
 
 ```json
 { "ok": true, "ready": true, "proxyUrl": "http://localhost:9292", "targetOrigin": "https://…",
-  "sessionIdPrefix": "a1b2c3d4…", "themeId": "…", "store": "magazam", "dir": "/…/tema",
+  "sessionIdPrefix": "a1b2c3d4…", "themeId": "…", "store": "mystore", "dir": "/…/theme",
   "fileCount": 42, "payloadBytes": 123456 }
 ```
 
-Senkron/heartbeat satırları stderr'de kalır.
+Sync and heartbeat lines stay on stderr.
 
 ```bash
-# YANLIŞ — jq EOF beklerken kilitlenir
+# WRONG — jq waits for EOF and hangs
 estorepark theme dev --json | jq
 
-# DOĞRU — dokümanı dosyadan okuyun
+# RIGHT — read the document from a file
 estorepark theme dev --json --no-input > dev.json &
-# dev.json dolduğunda proxyUrl'i oradan alın
+# take proxyUrl from dev.json once it is written
 ```
 
-`sessionIdPrefix` kırpılmış bir değerdir; tam session id'si **gövdeye girmez** çünkü
-`<mağaza-host>/?epid=…` ile temayı açan bir yetenek anahtarıdır. Kırpılmış hâlini bile
-log/issue/chat'e yapıştırmayın.
+`sessionIdPrefix` is truncated; the full session id **never enters the body** because it is a
+capability key that opens the theme through `<store-host>/?epid=…`. Do not paste even the
+truncated form into logs, issues or chat.
 
-## Yardım metni
+## Help text
 
-`--json` ile yardım istenirse yardım stdout'a düz metin olarak **basılmaz** — tek-JSON
-sözleşmesi kırılmasın diye. Yardımı okumak isteyen ajan `--json` vermemelidir.
+Asking for help with `--json` does **not** print the help to stdout as plain text — that would
+break the single-document contract. An agent that wants to read the help must not pass `--json`.
