@@ -37,7 +37,8 @@ hata verir.
 
 ## Section anatomisi
 
-Bir section tek dosyadır: markup + **gövdeye gömülü şema**.
+Bir section tek dosyadır: markup + **gövdeye gömülü şema**. Dosya yalnız **iç** markup'ı
+yazar — dış sarmalayıcıyı (`schema.tag` + `esp-section` + editör attribute'ları) motor üretir.
 
 ```handlebars
 <div class="hero">
@@ -152,5 +153,7 @@ dışında merchant'ındır. Alanlar ve örnekler: [references/routes.md](refere
 
 1. `estorepark theme check` — yapısal hataları yakalar (ağa çıkmaz).
 2. `estorepark theme dev` — gerçek veriyle canlı önizleme.
-3. Bir bölge boş çıkıyorsa sırayla bak: template JSON'da `settings` yazılı mı (şema `default`'u
-   sayılmaz) → `order` dizisinde id var mı → section dosya adı `type` ile aynı mı.
+3. Bir bölge boş çıkıyorsa sırayla bak: girdide `"disabled": true` var mı → `order` dizisinde
+   id geçiyor mu → section dosya adı `type` ile aynı mı (varyant kullanılıyorsa
+   `sections/[<type>]/<variant>.vitrine` var mı) → template JSON'da `settings` yazılı mı
+   (şema `default`'u sayılmaz).

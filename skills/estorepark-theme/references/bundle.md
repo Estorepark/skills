@@ -9,7 +9,7 @@ Her dizinin ne taşıdığı ve motorun ondan ne beklediği.
 | `routes.json` | **ZORUNLU.** URL tablosu — bkz. [routes.md](routes.md) |
 | `settings_schema.json` | Tema geneli ayar formu (renk şeması, tipografi, genel tercihler) |
 | `settings_data.json` | O ayarların değerleri; `color_schemes` objesi burada yaşar |
-| `hosted-slots.json` | Platform tarafından yerleştirilen alanların bağlanma noktaları |
+| `hosted-slots.json` | Platformun kendi sunduğu sayfalardaki (checkout, hesap/auth) slot'lara temanın basacağı bloklar — aşağıya bakın |
 
 `config/` yoksa `theme check` "doğru klasörde misiniz?" uyarısı verir — genelde yanlış dizinden
 çalıştırma işaretidir.
@@ -19,6 +19,10 @@ Her dizinin ne taşıdığı ve motorun ondan ne beklediği.
 `theme.vitrine` **zorunludur**: `<html>` iskeleti, `{{{sections "header"}}}` /
 `{{{sections "footer"}}}` bölge çağrıları ve içerik yuvası burada. İkinci bir layout
 (`account.vitrine` gibi) eklenebilir; template JSON'unda `"layout": "account"` ile seçilir.
+
+Layout'lar **zincirlenebilir**: `layout/<ad>.json` sidecar'ı kendi ebeveynini bildirir
+(`layout/account.json` → `{ "layout": "theme" }`), zincir DIŞ→İÇ sarılarak render edilir.
+Template'te `"layout": false` yazarsanız sayfa layout'suz render edilir.
 
 ## `templates/`
 
@@ -35,6 +39,16 @@ Rota hedefi başına bir JSON. Şekli:
 `order` render sırasını belirler; `sections` içinde olup `order`'da olmayan bir id
 **render edilmez**. `settings` yazılmayan bir ayar `undefined`'dır (şema `default`'u
 uygulanmaz).
+
+Section ve block girdilerinin taşıyabileceği diğer alanlar:
+
+| Alan | Ne |
+| ---- | -- |
+| `variant` | Layout varyantı — `sections/[<type>]/<variant>.vitrine`; yoksa/boşsa `default.vitrine` |
+| `disabled` | `true` ise o girdi render edilmez (silinmeden gizlemek için) |
+| `block_order` | Blok sırası. **Verilmezse** `blocks` objesinin anahtar sırası kullanılır |
+
+`disabled` bloklar `block_order`'da kalsa bile atlanır.
 
 ## `sections/` ve `blocks/`
 
@@ -71,6 +85,28 @@ temalar dosyayı `tr.default.json` adıyla gönderir; taban dil adımı bu yüzd
 
 Metinleri daima `{{t "anahtar" default="Metin"}}` ile yazın: locale dosyası eksik olsa bile
 doğru metin görünür.
+
+## `config/hosted-slots.json` ayrıntısı
+
+Checkout ve hesap/giriş sayfaları **platformun** sunduğu yüzeylerdir, temanın rotası değildir.
+Bu dosya o yüzeylerdeki adlandırılmış zone'lara temanın hangi blokları basacağını söyler:
+
+```json
+{
+  "checkout.announcement": [
+    { "type": "announcement-bar", "settings": { "text": "Güvenli ödeme" } }
+  ],
+  "auth.footer": [{ "type": "policy-links", "settings": { "link_1_label": "Gizlilik" } }]
+}
+```
+
+Tanımlı zone'lar: `checkout.announcement` · `checkout.trust` · `checkout.footer_note` ·
+`auth.announcement` · `auth.footer`. Başka zone adı render'a girmez.
+
+Blok paleti **sunucu tarafında sınırlıdır** — yalnız şu tipler basılır:
+`announcement-bar` · `rich-text` · `image` · `trust-badges` · `support-contact` ·
+`policy-links`. Listede olmayan bir tip sessizce düşer; geçersiz JSON tüm dosyayı boşa
+indirger.
 
 ## `assets/`
 

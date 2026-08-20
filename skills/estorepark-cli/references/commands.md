@@ -42,6 +42,13 @@ mağazayı değiştirmek gerekmez.
 (görsel ve fontlar dahil); önizleme session'ı yalnız metin taşıdığı için binary asset'ler
 sunucuya gitmez. Yerelde olmayan bir asset sunucudaki DRAFT'tan gelir.
 
+`theme package --out` çıktısını tema klasörünün İÇİNE yazarsanız üretilen zip bir sonraki
+pakete gömülür; CLI bunu `OUTPUT_INSIDE_THEME` uyarısıyla bildirir. Varsayılan
+`.estorepark/theme.zip` pakete girmez.
+
+`theme check` yapısal bulguların yanında **binary asset listesi** de döndürür: bu dosyalar
+`theme dev` önizlemesinde görünmez (önizleme yalnız metin taşır), yerelden servis edilirler.
+
 `theme init` argümansız çağrılınca TTY'de tema seçim listesi açar; liste kapalıyken mağazanın
 canlı temasını seçer ve hangisini seçtiğini stderr'e yazar.
 

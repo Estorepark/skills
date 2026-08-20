@@ -6,10 +6,10 @@
       "settings": {
         "heading": "Başlık",
         "body": "Açıklama metni",
-        "show_border": false
+        "width": "contained"
       },
       "blocks": {
-        "b1": { "type": "text", "settings": { "content": "İlk blok" } }
+        "b1": { "type": "text", "settings": { "title": "İlk blok", "body": "Metin", "align": "left" } }
       },
       "block_order": ["b1"]
     }

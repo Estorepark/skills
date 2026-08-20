@@ -64,8 +64,12 @@ Bunlar makul varsayımın yanlış olduğu yerler — komutu kurmadan önce okuy
   bayrağı ya da env değişkeni **yoktur**; token'lar log'a, hata çıktısına ve `--json` gövdesine
   asla yazılmaz. Config dosyasını okuyup içeriğini ekrana basmayın.
 - **Eksik argüman = interaktif liste, CI'da hata.** `store use`, `theme init` ve
-  `theme rollback` argüman verilmezse TTY'de seçim listesi açar. `--no-input` ∨ `CI=1` bunu
-  kapatır → argüman eksikse çıkış 2. Otomasyonda her zaman argümanı açıkça verin.
+  `theme rollback` argüman verilmezse TTY'de seçim listesi açar. `--no-input`, dolu bir `CI`
+  ortam değişkeni **ve `--json`** bunu kapatır → argüman eksikse çıkış 2. Otomasyonda her
+  zaman argümanı açıkça verin.
+- **`--json` prompt'ları da kapatır.** Ajan olarak `--json` ile çalışıyorsanız onay kutusu
+  hiç açılmaz: `publish`/`rollback` `--yes` olmadan **daima** `CONFIRMATION_REQUIRED` (çıkış 2)
+  verir. Bu bir hata değil, kapının çalıştığının işaretidir — kullanıcıya sorun.
 - **Bilinmeyen bayrak sessizce yutulmaz** (`UNKNOWN_FLAG`, çıkış 2). Yazım hatası (`--jsom`)
   komutu farklı çalıştırmaz, durdurur.
 

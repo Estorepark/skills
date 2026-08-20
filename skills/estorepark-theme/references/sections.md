@@ -43,7 +43,34 @@ sections/[site-header]/
 Varyant değişince merchant verisi (settings/blocks) korunur, yalnız markup değişir.
 `variants[]` yalnız etiket/sıra içindir; keşif klasörden de yapılır.
 
-## Ayar tipleri (22)
+## Sarmalayıcıyı MOTOR üretir
+
+`.vitrine` dosyası yalnız **iç** markup'ı yazar. Motor her section'ı şu kabuğa sarar:
+
+```html
+<section id="esp-section-<id>" class="esp-section <schema.class> section--<width>">…</section>
+```
+
+Etiket `schema.tag`'den (yoksa `div`), sınıf `schema.class`'tan, `section--<mode>` ise
+**`settings.width`** değerinden gelir (`contained` · `full` · `narrow`; tanınmayan değer yok
+sayılır). Editör seçim attribute'ları (`data-editor-section`, region'da
+`data-editor-container`) design mode'da otomatik eklenir → kendi kabuğunuzu yazmayın.
+
+Bloklar da otomatik sarılır: `{{{block this}}}` çıktıyı
+`<div class="block block--<type>" data-editor-block=… data-editor-type=…>` içine koyar.
+Bu yüzden `editor_attributes` helper'ı standart yolda gereksizdir; yalnız kendi özel
+markup'ınızda seçim attribute'u gerekiyorsa kullanılır (referans tema hiç kullanmaz).
+
+## Block dosyaları
+
+`blocks/<tip>.vitrine` — bağlam `block`'tur (`{{block.settings.x}}`), şema başlığı
+`"$schema": "estorepark/block-schema/v0"`, `editable` çağrısında `scope="block"`:
+
+```handlebars
+<p>{{editable block.settings.body field="body" scope="block"}}</p>
+```
+
+## Ayar tipleri
 
 Ortak alanlar: `id` (zorunlu, `^[a-z][a-z0-9_]*$`), `label` (zorunlu), `info`, `role`,
 `visible_if`, `enabled_if`.
@@ -72,8 +99,8 @@ Ortak alanlar: `id` (zorunlu, `^[a-z][a-z0-9_]*$`), `label` (zorunlu), `info`, `
 | `resource_list` | `resource`, `limit` (zorunlu) |
 | `datetime` | `placeholder`, `with_time` |
 
-Değer taşımayan (form düzenleyen) tipler: `header` (`content`, `info?`) ve `paragraph`
-(`content`).
+Yukarıdaki tablo **21 değer taşıyan tipin tamamıdır**. Ayrıca değer taşımayan (yalnız formu
+düzenleyen) 2 tip vardır: `header` (`content`, `info?`) ve `paragraph` (`content`).
 
 ## Koşullu görünürlük
 

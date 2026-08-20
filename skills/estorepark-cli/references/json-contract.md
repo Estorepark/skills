@@ -18,21 +18,36 @@ spinner stderr'e gider. Bu yüzden `estorepark theme list --json | jq` güvenlid
 Ayrımı **`error.code`** ile yapın; `message` insan içindir ve değişebilir.
 Kod listesi: [errors.md](errors.md).
 
-## `theme push` — uyarı alanı
+## `warnings` alanı
 
-`push` her çağrıda DRAFT'ı ezdiği için uyarır:
+Başarılı gövde (`ok: true`) uyarı taşıyabilir. Varlığını hata sanmayın.
+
+`theme push` — **koşulsuz**, her çağrıda:
 
 ```json
-{ "ok": true, "warnings": ["DRAFT_REPLACED"], "...": "…" }
+{ "ok": true, "store": "magazam", "themeId": "…", "version": { "contentHash": "…" },
+  "warnings": ["DRAFT_REPLACED"] }
 ```
 
-`warnings` boş olsa bile alan bulunur; varlığını hata sanmayın — `ok: true` başarıdır.
+Alan hiç boş dönmez; script "bu işlem DRAFT'ı tamamen değiştirdi" bilgisine her zaman
+erişebilsin diye koşulsuzdur.
+
+`theme package` — **koşullu**: `--out` çıktısı tema klasörünün içine düşerse
+`warnings: ["OUTPUT_INSIDE_THEME"]` eklenir (üretilen zip bir sonraki pakete gömülür).
+Varsayılan `.estorepark/theme.zip` bu tuzağa düşmez; uyarı yoksa alan da yoktur.
 
 ## `theme dev` — uzun ömürlü komut
 
-`theme dev --json`, proxy dinlemeye başladığı anda **tek bir "hazır" dokümanı** basar
-(`proxyUrl`, `targetOrigin`, `sessionIdPrefix` gibi alanlarla), sonra çalışmaya devam eder.
-Süreç bitmediği için stdout'a EOF gelmez.
+`theme dev --json`, proxy dinlemeye başladığı anda **tek bir "hazır" dokümanı** basar, sonra
+çalışmaya devam eder. Süreç bitmediği için stdout'a EOF gelmez.
+
+```json
+{ "ok": true, "ready": true, "proxyUrl": "http://localhost:9292", "targetOrigin": "https://…",
+  "sessionIdPrefix": "a1b2c3d4…", "themeId": "…", "store": "magazam", "dir": "/…/tema",
+  "fileCount": 42, "payloadBytes": 123456 }
+```
+
+Senkron/heartbeat satırları stderr'de kalır.
 
 ```bash
 # YANLIŞ — jq EOF beklerken kilitlenir

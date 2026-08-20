@@ -34,6 +34,7 @@ doğrular; işaret ettiği her `template` için `templates/<ad>.json` bulunmalı
 | `resource` | `product` · `collection` · `category` · `blog` | Yalnız metadata/UI; dispatch **`template`'ten** yapılır |
 | `template` | `templates/<ad>.json` | Detay şablonu |
 | `indexTemplate` | `templates/<ad>.json` | `prefix` rotalarında liste şablonu |
+| `previousPaths` | string[] | Eski yollar → 301 kaynağı; `path` yeniden adlandırılınca doldurulur |
 | `enabled` | boolean | `false` ise rota yok sayılır |
 
 Kaynak eşlemesi birincil olarak `template` adından türetilir: `product` → ürün,
