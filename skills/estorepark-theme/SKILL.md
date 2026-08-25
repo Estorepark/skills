@@ -1,11 +1,11 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, and i18n. EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, and the listing surfaces (search box and autocomplete, facet panel, sorting, pagination). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
 license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.2.0"
+  version: "0.4.0"
 ---
 
 # The EstorePark theme bundle
@@ -89,12 +89,30 @@ as silent emptiness — no error, so a typo goes unnoticed.
 These are the helpers the engine knows; a theme cannot add new ones:
 
 `money` · `image_url` · `asset_url` · `stylesheet_tag` · `script_tag` · `t` / `translate` ·
-`link_to` · `editable` · `editor_attributes` · `block` · `sections`
+`date` · `link_to` · `editable` · `editor_attributes` · `block` · `sections`
 
 Built-ins: `if` · `unless` · `each` · `with` · `lookup`.
 
-A helper that is not on this list (`capitalize`, `date`, `json` …) **does not resolve** at
-render time. Solve the transformation where the data is prepared, not in the template.
+A helper that is not on this list (`capitalize`, `eq`, `json`, arithmetic …) **does not resolve**
+at render time. Solve the transformation where the data is prepared, not in the template.
+
+**There is no equality helper, and there will not be one.** `{{#if}}` tests truthiness only — it
+cannot branch on the *value* of an enum. Every enum a theme must branch on therefore ships with a
+boolean companion: `Campaign.kind` → `is_catalog`, `Cart.discounts[].scope` → `is_shipping`,
+`sale_source` → `is_campaign_sale`. Branch on the boolean; keep the enum for a CSS class or
+`data-*` hook.
+
+### `date`
+
+```handlebars
+{{date post.published_at}}                    {{! 13.08.2026 — needs no locale data }}
+{{date post.published_at format="long"}}      {{! 13 Ağustos 2026 — reads date.months.<1..12> }}
+{{date order.created_at format="datetime"}}   {{! 13.08.2026 14:30 }}
+```
+
+It prints the wall-clock fields **as written** and never shifts: the server emits timestamps in
+the store's own offset (`2026-08-13T12:00:00+03:00`). An unparseable value, or a missing month
+name under `format="long"`, falls back to the raw/numeric output — never an invented date.
 
 ## i18n
 
@@ -116,6 +134,25 @@ File selection: `locales/{locale}.default.json` → `{locale}.json` → `{lang}.
 `config/routes.json` defines this theme's URLs; apart from the platform-reserved paths they
 belong to the merchant. Fields and examples: [references/routes.md](references/routes.md).
 
+## Listing surfaces
+
+Collection, category, product index and search all render from the same objects: `products`
+(`Card[]`), `filters`, `applied_filters`, `sort_options` and `paginate`. Every `url` on them is
+**server-generated** — the theme prints them, it never builds one.
+
+```handlebars
+{{#each sort_options}}
+  <a href="{{this.url}}" {{#if this.active}}aria-current="true"{{/if}}>{{t this.label default=this.value}}</a>
+{{/each}}
+```
+
+The search box posts to `{{routes.search_url}}` with `name="q"` and works without JavaScript;
+autocomplete (`{{routes.search_suggest_url}}`) and in-place refresh
+(`{{routes.search_results_url}}`) are enhancements layered on top.
+
+Objects, the range-filter form, both endpoints and their gotchas:
+[references/listing.md](references/listing.md).
+
 ## Gotchas
 
 - **A schema `default` is NOT applied at render time.** `default` is editor metadata. Rendering
@@ -129,8 +166,17 @@ belong to the merchant. Fields and examples: [references/routes.md](references/r
   the platform route wins. The cart **page** is the theme's own: `templates/cart.json` plus an
   exact route with `template: "cart"` in `routes.json` (`/sepet` in the default theme). Post
   cart forms to the platform endpoints, not to a path you invent.
+- **`/search` and `/search/*` are platform-reserved too.** The search **page** is the theme's
+  (`templates/search.json` plus an exact route with `template: "search"` — `/ara` in the default
+  theme, read from `{{routes.search_url}}`), while autocomplete and the listing fragment are the
+  platform's: `{{routes.search_suggest_url}}` and `{{routes.search_results_url}}`.
+- **A theme never writes a listing querystring.** Filter, sort and pagination URLs all arrive
+  ready-made on `filters` / `sort_options` / `paginate`; a hand-written `?sort=…` is dropped
+  silently when it falls outside the allowlist, and a hand-written `?brand=…` wipes the active
+  search term and the other filters. Read [references/listing.md](references/listing.md) before
+  building any list, facet panel, sort control, pagination or search box.
 - **Reserved heads:** `api`, `admin`, `graphql`, `assets`, `_next`, `.well-known`, `checkout`,
-  `cart`. The first segment of a route cannot be one of these.
+  `cart`, `search`. The first segment of a route cannot be one of these.
 - **`theme init` / `theme pull` do not download binary assets** (the server returns text only).
   Running `theme push` while images are missing locally deletes the assets on the server — see
   the `DRAFT_REPLACED` warning in the `estorepark-cli` skill.

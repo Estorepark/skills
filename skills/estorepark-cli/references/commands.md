@@ -38,6 +38,18 @@ is enough — you do not need to change the active store.
 | `theme rollback --version N` | Makes an older version live again — asks for confirmation | ✔ |
 | `theme pull` | Writes the DRAFT files to disk | ✔ |
 
+### Listing surfaces in `theme dev`
+
+Search, sorting, pagination and the **filter panel** all work — the preview reads facet
+distributions from the storefront API. Two limits remain, and `theme dev` prints them on startup:
+
+- The filter panel is built from the **platform default set**. A merchant's own filter
+  configuration is admin data and is not on the public surface. Stores without custom
+  configuration see exactly what production shows (production also falls back to the default set).
+- **Brand, category and option selections do not narrow results in dev.** The public filter input
+  takes **ids** while the URL carries slugs, and the CLI has no slug→id dictionary. Price, stock
+  and on-sale selections do apply — price on the net axis in dev, gross in production.
+
 During `theme dev` the files under `assets/` are served **straight from the local folder**
 (images and fonts included); the preview session only carries text, so binary assets never
 reach the server. An asset missing locally comes from the DRAFT on the server.
