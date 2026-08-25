@@ -5,7 +5,7 @@ license: MIT
 compatibility: Node.js 24+ and the `estorepark` CLI. Commands that hit the network need a reachable EstorePark environment and a session.
 metadata:
   author: estorepark
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # EstorePark CLI
