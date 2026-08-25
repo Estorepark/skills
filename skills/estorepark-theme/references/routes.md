@@ -48,11 +48,17 @@ of the blog resource is `article`, its list is `blog`).
 
 The first segment of a route cannot be any of:
 
-`api` · `admin` · `graphql` · `assets` · `_next` · `.well-known` · `checkout` · `cart`
+`api` · `admin` · `graphql` · `assets` · `_next` · `.well-known` · `checkout` · `cart` · `search`
 
 `/cart` and `/cart/*` are the **platform cart endpoints**; even if the bundle declares the same
 path, the static route wins. The cart **page** belongs to the theme and is derived from the
 exact route with `template: "cart"` — `/sepet` in the example above.
+
+`/search` and `/search/*` follow the same split: `/search/suggest` (autocomplete JSON) and
+`/search/results` (listing fragment HTML) are the platform's, reachable through
+`{{routes.search_suggest_url}}` and `{{routes.search_results_url}}`. The search **page** is the
+theme's, derived from the exact route with `template: "search"` — `/ara` above, read from
+`{{routes.search_url}}`. See [listing.md](listing.md).
 
 ## Template names
 
