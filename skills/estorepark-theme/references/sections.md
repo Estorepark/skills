@@ -94,7 +94,7 @@ Common fields: `id` (required, `^[a-z][a-z0-9_]*$`), `label` (required), `info`,
 | `color_scheme` | `default` |
 | `color_scheme_group` | `definition[]` — DEFINES the colour schemes, carries no value |
 | `font_picker` | `default` (required) |
-| `image` | — |
+| `image` | — (value is a bare URL string; **no size variants** — see `image_url` in SKILL.md) |
 | `video_url` | `accept: ('youtube'\|'vimeo')[]` (required) |
 | `url` | `default`, `placeholder`, `allow_relative`, `open_target` |
 | `text_alignment` | `default: left\|center\|right` |

@@ -5,7 +5,7 @@ license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.4.0"
+  version: "0.5.0"
 ---
 
 # The EstorePark theme bundle
@@ -114,6 +114,43 @@ It prints the wall-clock fields **as written** and never shifts: the server emit
 the store's own offset (`2026-08-13T12:00:00+03:00`). An unparseable value, or a missing month
 name under `format="long"`, falls back to the raw/numeric output — never an invented date.
 
+### `image_url`
+
+Picks a generated size/format variant of a store image. **Always route catalogue images through
+it** — product, collection, blog and cart images arrive as full-size originals otherwise.
+
+```handlebars
+{{image_url image width=800}}                        {{! smallest variant at least 800px wide }}
+{{image_url image variant="small"}}                  {{! that exact rung — beats width= }}
+{{image_url image variant="medium" format="webp"}}   {{! the WebP of that rung }}
+{{image_url image}}                                  {{! the original }}
+```
+
+The rungs are `thumbnail` 150 · `small` 400 · `medium` 800 · `large` 1600, each in the original
+format **and** WebP. `width=` expresses the slot you are filling and survives a rung change, so
+prefer it; reach for `variant=` when you need two specific URLs side by side.
+
+Serving WebP takes a `<picture>`, because the engine renders identically on the server and in the
+browser and so cannot negotiate on `Accept`:
+
+```handlebars
+<picture>
+  <source srcset="{{image_url image variant="medium" format="webp"}}" type="image/webp">
+  <img src="{{image_url image variant="medium"}}" alt="{{image.alt}}" loading="lazy">
+</picture>
+```
+
+`variant=` also makes a hand-written `srcset` possible — write the width descriptors yourself:
+
+```handlebars
+srcset="{{image_url image variant="small"}} 400w, {{image_url image variant="medium"}} 800w"
+```
+
+Anything the helper cannot satisfy — no variants, no rung wide enough, an unknown name, a missing
+format, a `width` that is not a number — falls back to the original. A working large image beats a
+broken small one, and variants are not guaranteed: processing is asynchronous and can fail, and
+images uploaded before the pipeline existed have none at all.
+
 ## i18n
 
 Always write copy with `default=`:
@@ -186,6 +223,20 @@ Objects, the range-filter form, both endpoints and their gotchas:
 - **Rendering is deterministic.** Engine helpers are pure and deterministic; template output
   must be byte-identical on the server and in the browser. Do not try to produce output that
   varies with the current date or locale.
+- **`{{image.url}}` is the ORIGINAL — never put it in an `<img src>` for a card or thumbnail.**
+  Originals are archive-grade: one measured product photo is 617 KB as `original.jpg` and 45 KB
+  as `medium.jpg`. Route catalogue images through `{{image_url image width=…}}`. `image.url`
+  stays in the contract because `og:image`, JSON-LD and the image sitemap need the full size.
+- **`image_url` used to append a meaningless `?width=N`.** The CDN ignored the query string, so
+  the original was served at full size and the theme author believed they had optimised. It now
+  selects a real variant and appends nothing. If you are reading an older theme, every
+  `width=` call there was a no-op.
+- **The rungs stop at 1600.** `width=1920` matches nothing and falls back to the original — ask
+  for `width=1600` and you get `large`, which is usually pixel-identical to the original but
+  around 78% smaller.
+- **Image-type SETTINGS do not get variants.** A merchant-uploaded `image` setting is stored as
+  a bare URL string, so `{{image_url settings.logo width=480}}` returns that string unchanged.
+  Only catalogue images (product, collection, blog, cart) carry variants.
 
 ## Adding a new section
 
