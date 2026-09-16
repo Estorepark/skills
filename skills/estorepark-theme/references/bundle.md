@@ -112,6 +112,14 @@ to nothing.
 CSS, JS, images, fonts. Used from templates with `{{asset_url "theme.css"}}`,
 `{{stylesheet_tag …}}`, `{{script_tag …}}`.
 
+**`asset_url` and `image_url` are not interchangeable.** `assets/` holds files the *theme* ships
+— decorative art, the packaged logo, icons — and they have no size variants, so they are always
+served exactly as committed; keep them small yourself. `image_url` addresses *store media* the
+merchant uploaded, which the platform has already resized into `thumbnail`/`small`/`medium`/`large`
+plus WebP. A theme typically uses both in one place, as a three-tier fallback: store media first
+(`{{image_url settings.logo width=480}}`), then the packaged asset (`{{asset_url "logo.png"}}`),
+then a text or inline-SVG fallback.
+
 **During `theme dev`, `assets/` is served from local disk** (images and fonts included), but
 `theme init` / `theme pull` **do not download** binary assets, because the server returns text
 only. Combined with `theme push`, that asymmetry can delete the assets on the server — see

@@ -120,6 +120,10 @@ the theme has to follow.
 
 ## Gotchas
 
+- **A card image must go through `image_url`.** `{{card.image.url}}` is the full-size original —
+  archive-grade, routinely over half a megabyte. Write `{{image_url image width=800}}` in the card
+  markup; `image.url` stays in the contract for `og:image`, JSON-LD and the image sitemap, which
+  need the full size. See the `image_url` section in SKILL.md.
 - **Listing surfaces carry `Card`, not `Product`.** `collection.products` and `products` are
   `Card[]`: `title` · `url` · `image` · `price` · `compare_at_price` · `available` ·
   `default_variant_id` · `price_varies` and the discount fields. No `variants`, no `options`, no
