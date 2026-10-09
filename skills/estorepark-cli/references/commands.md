@@ -30,10 +30,10 @@ is enough — you do not need to change the active store.
 | `theme list` | Themes of the store | ✔ |
 | `theme dev` | Local proxy (default `localhost:9292`): rendering happens on the server with real tenant data while files are served from disk | ✔ |
 | `theme preview` | One-shot preview URL (no proxy) | ✔ |
-| `theme check` | Local structural validation | ✘ |
+| `theme check` | Local structural validation (does **not** check `emails/` or `config/email_brand.json`) | ✘ |
 | `theme package` | Produces a deterministic zip (default `.estorepark/theme.zip`) | ✘ |
-| `theme push` | Uploads and indexes as DRAFT — **does not publish**, replaces the DRAFT | ✔ |
-| `theme publish` | Publishes the DRAFT AND makes it live — asks for confirmation | ✔ |
+| `theme push` | Uploads and indexes as DRAFT — **does not publish**, replaces the DRAFT. Then lists the theme's e-mail design files that cannot be applied or are ignored (path + reason) | ✔ |
+| `theme publish` | Publishes the DRAFT AND makes it live — asks for confirmation. Then hints when the live theme has e-mail designs the merchant can apply in the admin panel | ✔ |
 | `theme versions` | Release history (`--limit` / `--offset`, defaults 20 / 0) | ✔ |
 | `theme rollback --version N` | Makes an older version live again — asks for confirmation | ✔ |
 | `theme pull` | Writes the DRAFT files to disk | ✔ |
