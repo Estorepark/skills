@@ -38,7 +38,7 @@ The skills are agent-agnostic; copying the `SKILL.md` files by hand works too �
 | Skill | When it applies |
 | ----- | --------------- |
 | [`estorepark-cli`](skills/estorepark-cli) | Driving the `estorepark` command: device login, store selection, `theme init/dev/check/package/push/publish/rollback`, the `--json` output, exit codes, CI usage |
-| [`estorepark-theme`](skills/estorepark-theme) | Writing theme **code**: section/block/template/region files, `config/routes.json`, embedded schemas, the helper catalogue, i18n, and the listing surfaces — search box and autocomplete, facet panel, sorting, pagination |
+| [`estorepark-theme`](skills/estorepark-theme) | Writing theme **code**: section/block/template/region files, `config/routes.json`, embedded schemas, the helper catalogue, i18n, the listing surfaces — search box and autocomplete, facet panel, sorting, pagination — and optional customer e-mail designs (`emails/`, `config/email_brand.json`) |
 
 They are separate because one is about **driving the command** and the other about **writing
 theme code**; a task usually needs only one of them, and their content does not overlap.

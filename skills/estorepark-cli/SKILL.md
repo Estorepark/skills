@@ -5,7 +5,7 @@ license: MIT
 compatibility: Node.js 24+ and the `estorepark` CLI. Commands that hit the network need a reachable EstorePark environment and a session.
 metadata:
   author: estorepark
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # EstorePark CLI
@@ -73,6 +73,12 @@ These are the places where the reasonable assumption is wrong. Read them before 
   (exit 2). That is not a failure, it is the gate working — ask the user.
 - **Unknown flags are not swallowed** (`UNKNOWN_FLAG`, exit 2). A typo like `--jsom` stops the
   command instead of running it differently.
+- **E-mail design warnings are not failures.** `theme push` may add `EMAIL_DESIGNS_INVALID` /
+  `EMAIL_DESIGNS_IGNORED` (with `emailDesigns.invalid` / `.ignored`) and `theme publish` may add
+  `emailDesigns`; the exit code is still 0. The CLI **cannot apply** e-mail designs — the merchant
+  does it in the admin panel (**E-posta şablonları › Temadan uygula**). Fix the reported files with
+  the `estorepark-theme` skill (its e-mail designs reference). Details:
+  [references/json-contract.md](references/json-contract.md).
 
 ## The `--json` contract
 
