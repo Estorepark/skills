@@ -10,6 +10,7 @@ What each directory holds and what the engine expects from it.
 | `settings_schema.json` | Theme-wide settings form (colour scheme, typography, general preferences) |
 | `settings_data.json` | Values for those settings; the `color_schemes` object lives here |
 | `hosted-slots.json` | Blocks the theme contributes to slots on platform-hosted pages (checkout, account/auth) — see below |
+| `email_brand.json` | Optional e-mail brand kit (logo, brand colour, kit) the merchant can apply to their e-mails — see [emails.md](emails.md) |
 
 When `config/` is missing, `theme check` warns "are you in the right folder?" — usually a sign
 of running from the wrong directory.
@@ -124,3 +125,11 @@ then a text or inline-SVG fallback.
 `theme init` / `theme pull` **do not download** binary assets, because the server returns text
 only. Combined with `theme push`, that asymmetry can delete the assets on the server — see
 `DRAFT_REPLACED` in the `estorepark-cli` skill.
+
+## `emails/`
+
+Optional designs for the store's **customer** e-mails, one JSON per template:
+`emails/customer/<template>.json` (e.g. `emails/customer/order-confirmation.json`). The storefront
+does not render them and the validation run on upload does not check them; the platform evaluates
+them when the merchant opens **Temadan uygula** and copies the selected ones into the store's e-mail
+settings. Format, recognised keys and rules: [emails.md](emails.md).

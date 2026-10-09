@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 2,
+  "subject": "{{default storeName 'Mağazamız'}} ailesine hoş geldiniz",
+  "blocks": [
+    { "type": "logo", "align": "center" },
+    {
+      "type": "heading",
+      "text": "Hoş geldiniz, {{default customerFirstName 'değerli müşterimiz'}}",
+      "level": 1,
+      "align": "center",
+      "style": { "paddingTop": 32, "color": "#1f2937" }
+    },
+    {
+      "type": "text",
+      "html": "<p>Üyeliğiniz oluşturuldu. Yeni sezon ürünlerine göz atmak için <a href=\"{{storeUrl}}/koleksiyonlar/yeni-sezon\">koleksiyonu</a> ziyaret edin.</p>",
+      "style": { "align": "center" }
+    },
+    {
+      "type": "button",
+      "label": "Alışverişe başla",
+      "url": "{{storeUrl}}",
+      "align": "center",
+      "style": { "buttonColor": "#1f2937", "borderRadius": 24 }
+    },
+    { "type": "divider", "style": { "paddingTop": 24 } },
+    {
+      "type": "text",
+      "html": "<p>{{brandFooterText}}</p>",
+      "style": { "fontSize": 12, "color": "#9aa1ad", "align": "center" }
+    }
+  ]
+}

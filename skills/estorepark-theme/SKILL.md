@@ -1,11 +1,11 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, and the listing surfaces (search box and autocomplete, facet panel, sorting, pagination). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
 license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 # The EstorePark theme bundle
@@ -28,7 +28,9 @@ theme/
 ├── regions/<name>.json         # page-level regions such as header/footer
 ├── snippets/*.vitrine          # partials
 ├── locales/<lang>.default.json # translations
-└── assets/                     # css/js/images
+├── assets/                     # css/js/images
+├── emails/customer/<t>.json    # optional — customer e-mail designs (not rendered by the storefront)
+└── config/email_brand.json     # optional — e-mail brand kit
 ```
 
 Structural validation: `estorepark theme check` — it fails when `config/routes.json` is missing
@@ -190,6 +192,17 @@ autocomplete (`{{routes.search_suggest_url}}`) and in-place refresh
 Objects, the range-filter form, both endpoints and their gotchas:
 [references/listing.md](references/listing.md).
 
+## E-mail designs
+
+A theme can carry designs for the store's **customer** e-mails (`emails/customer/<template>.json`)
+and an e-mail brand kit (`config/email_brand.json`). They are data, not templates: the storefront
+never renders them and nothing is sent from them until the merchant applies them in the admin panel,
+which copies them into the store's e-mail settings. Read
+[references/emails.md](references/emails.md) **before creating or editing any file under `emails/`
+or `config/email_brand.json`** — file format, the recognised template keys, the block vocabulary,
+tokens, the address rule and every rejection reason are there. A working file to start from:
+[`assets/email-template.json`](assets/email-template.json).
+
 ## Gotchas
 
 - **A schema `default` is NOT applied at render time.** `default` is editor metadata. Rendering
@@ -234,6 +247,25 @@ Objects, the range-filter form, both endpoints and their gotchas:
 - **The rungs stop at 1600.** `width=1920` matches nothing and falls back to the original — ask
   for `width=1600` and you get `large`, which is usually pixel-identical to the original but
   around 78% smaller.
+- **E-mail addresses cannot be relative.** In `emails/*.json` a `/kampanya` link or a path to a
+  theme asset is rejected (`INVALID_URL`) — e-mails have no base URL. Write `{{storeUrl}}/kampanya` or an
+  absolute `https://` address; theme assets cannot be referenced from an e-mail at all.
+- **`schemaVersion` must be exactly `2`; block `id`s are optional.** Missing or duplicated ids are
+  filled in for you — do not invent an id scheme.
+- **The storefront never renders `emails/` or `config/email_brand.json`, and a bad file never
+  fails `theme check`, `push` or `publish`.** It is only reported (`theme push` lists it) and can
+  never be applied. A typo in the file name (`order-confirmaton.json`) makes the file silently
+  *ignored* as an unknown template.
+- **Only customer e-mails come from a theme.** Merchant/system e-mails (new-order notices etc.)
+  are not themeable; such a file is ignored.
+- **Applying an e-mail design copies it.** After the merchant applies it, a later theme update does
+  not change the sent e-mail; nothing is applied automatically on publish.
+- **The default theme's e-mail files are marked `"platformDefault": true`.** They are reference
+  copies of the platform defaults and can never be applied. If you copy one as a starting point,
+  **remove that line**, otherwise your design is ignored (`PLATFORM_DEFAULT_COPY`).
+- **Keep the unsubscribe link in `customer/checkout-abandoned`.** The default design links
+  `{{storeUrl}}/checkout/unsubscribe/{{unsubscribeToken}}`; it is legally required for this
+  e-mail and nothing enforces it if you drop it.
 - **Image-type SETTINGS do not get variants.** A merchant-uploaded `image` setting is stored as
   a bare URL string, so `{{image_url settings.logo width=480}}` returns that string unchanged.
   Only catalogue images (product, collection, blog, cart) carry variants.
