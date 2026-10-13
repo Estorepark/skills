@@ -7,7 +7,7 @@ that is not on this list exits 2 with `UNKNOWN_FLAG`.
 
 | Command | What it does |
 | ------- | ------------ |
-| `estorepark login` | Device login approved in a browser (OAuth2 device flow). The password never passes through the CLI. An agent cannot complete this flow — the code is shown to the user. |
+| `estorepark login` | Device login approved in a browser (OAuth2 device flow). The password never passes through the CLI. An agent cannot complete this flow — the code is shown to the user. Requests the theme and menu scopes (`read:themes write:themes read:menus write:menus`) and stores the granted list with the session. |
 | `estorepark logout` | Deletes the local session |
 | `estorepark whoami` | Session + number of reachable stores |
 
@@ -65,22 +65,53 @@ from disk.
 Called with no argument, `theme init` opens a theme picker on a TTY; when the picker is closed
 it selects the store's live theme and writes which one it picked to stderr.
 
+## Menu
+
+The store's navigation menus. Menus are **live data, not drafts** — every write reaches the
+storefront immediately.
+
+| Command | What it does | Network |
+| ------- | ------------ | ------- |
+| `menu list` | The store's menus: handle, item count, title (`estorepark menu` alone does the same) | ✔ |
+| `menu get <handle>` | One menu as a tree; with `--json` the `menu` field is a ready menu file | ✔ |
+| `menu create --file <path>` | Creates the menu in the file (the handle comes from the file) — asks for confirmation | ✔ |
+| `menu update <handle> --file <path>` | Replaces the **whole** menu (title + item tree) with the file; the handle never changes — asks for confirmation | ✔ |
+| `menu delete <handle>` | Deletes the menu — asks for confirmation | ✔ |
+
+Menus are addressed by **handle**; the id is never asked for. The store is chosen as for theme
+commands: `--store` → the store in the folder's `.estorepark/theme.json` (`--dir` or the current
+directory) → the active store.
+
+Each command runs its steps in a fixed order: file check → session and store → scope check →
+handle lookup (`get` / `update` / `delete`) → confirmation → write. So a broken file fails before
+anything else, no menu request is sent until the scope check passes, and `MENU_NOT_FOUND` comes before
+`CONFIRMATION_REQUIRED`.
+
+The confirmation summary (printed in Turkish) states what will happen: `create` —
+`‹handle› N öğeyle oluşturulacak`; `update` — `‹handle›: öğe sayısı A → B`; `delete` —
+`‹handle› silinecek; bu menüye bağlı tema bölümleri başka bir menüye ya da yedek linklerine
+düşebilir`. Item counts here and in `menu list` are the stored items on all levels; children an
+auto-fill item generates on the storefront are not counted.
+
+File format, defaults and the declarative update: [menu-file.md](menu-file.md).
+
 ## Flags
 
 | Flag | Meaning |
 | ---- | ------- |
-| `--store <slug>` | Store (default: the one selected with `store use`) |
+| `--store <slug>` | Store (default: the folder's `.estorepark/theme.json`, then the one selected with `store use`) |
 | `--theme <id>` | Theme (default: `.estorepark/theme.json`) |
 | `--dir <path>` | Theme folder (default: current directory) |
 | `--port <n>` | Local port for `theme dev` (default 9292) |
 | `--name <name>` | New theme name for `theme init` |
 | `--out <file>` | Output path for `theme package` |
 | `--version <n>` | Target version for `theme rollback` |
+| `--file <path>` | Menu file for `menu create` / `menu update` (JSON; the `menu get --json` output works as is). Relative to the current directory, not `--dir` |
 | `--limit <n>` `--offset <n>` | Paging for `theme versions` |
 | `--json` | Machine-readable output (a single JSON document on stdout) |
 | `--quiet` | Print errors only |
 | `--no-input` | Disable interactive surfaces (CI). A non-empty `CI` variable does the same. |
-| `--yes` | Approve live-changing operations without asking (`publish`, `rollback`) |
+| `--yes` | Approve live-changing operations without asking (`publish`, `rollback`, `menu create` / `update` / `delete`) |
 | `--api <url>` `--accounts <url>` | Environment roots (env: `ESTOREPARK_API_BASE` / `ESTOREPARK_ACCOUNTS_BASE`) |
 | `-h, --help` | Help |
 | `--version` | CLI version (when no command is given; `--version-cli` is a synonym) |
@@ -101,3 +132,6 @@ neither `--no-input`, `--json`, nor a non-empty `CI` variable is present.
 
 In the picker: `↑↓` move · `Enter` select · `1-9` jump · `/` filter · `Esc` cancel. Cancelling
 behaves like a missing argument (exit 2).
+
+Menu commands open **no picker**: a missing handle or `--file` is `MISSING_ARGUMENT` (exit 2) even
+on a TTY. Their only interactive surface is the confirmation box.

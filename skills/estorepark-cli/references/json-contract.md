@@ -18,6 +18,17 @@ spinner go to stderr. That is why `estorepark theme list --json | jq` is safe.
 Branch on **`error.code`**; `message` is for humans, is written in Turkish, and may change.
 Code list: [errors.md](errors.md).
 
+One code carries an extra field. On `MENU_INVALID`, when the store named the rule it rejected,
+`error.reason` holds that rule token:
+
+```json
+{ "ok": false, "error": { "code": "MENU_INVALID", "message": "…", "reason": "MENU_DEPTH_EXCEEDED" } }
+```
+
+`reason` is optional and additive: it is absent when the store gave no token (an undefined enum
+value in the file) and never appears on any other code. Branch on `reason` for the rule, never on
+`message`. Token list: [menu-file.md](menu-file.md).
+
 ## The `warnings` field
 
 A success body (`ok: true`) can carry warnings. Do not mistake their presence for a failure.
@@ -68,6 +79,34 @@ code, stderr gets one line (`E-posta tasarım raporu alınamadı`) and the body 
 `warnings: ["OUTPUT_INSIDE_THEME"]` is added (the produced zip would be bundled into the next
 package). The default `.estorepark/theme.zip` does not trip it; with no warning the field is
 absent.
+
+## Menu bodies
+
+```json
+{ "ok": true, "store": "mystore",
+  "menus": [{ "id": "…", "handle": "main-menu", "title": "Ana Menü", "itemCount": 6 }] }
+```
+
+`menu list` — `itemCount` is the number of stored items on all levels; children an auto-fill item
+generates on the storefront are not counted.
+
+```json
+{ "ok": true, "store": "mystore",
+  "menu": { "id": "…", "handle": "main-menu", "title": "Ana Menü",
+            "items": [{ "title": "Kategoriler", "kind": "HEADING", "newTab": false,
+                        "autoFill": "ALL_CATEGORIES", "autoFillLimit": 20, "children": [] }] } }
+```
+
+`menu get`, `menu create` and `menu update` — `menu` is in the [menu file](menu-file.md) format
+with the defaults written out (`newTab`, `autoFill` and `children` always present, `null` fields
+omitted). `create` / `update` return the menu as the store saved it. The whole body is valid
+`--file` input.
+
+```json
+{ "ok": true, "store": "mystore", "deleted": { "id": "…", "handle": "main-menu" } }
+```
+
+`menu delete`. Menu bodies carry no `warnings` field.
 
 ## `theme dev` — a long-running command
 
