@@ -1,11 +1,11 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla" gibi isteklerde kullan. To upload or publish a theme, use the estorepark-cli skill instead.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), header/footer navigation menus (menu-type `resource` settings, the `linklists` global), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "header menüsü", "menüyü temaya bağla", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla" gibi isteklerde kullan. To upload or publish a theme, or to create store menus, use the estorepark-cli skill instead.
 license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.6.0"
+  version: "0.7.0"
 ---
 
 # The EstorePark theme bundle
@@ -192,6 +192,21 @@ autocomplete (`{{routes.search_suggest_url}}`) and in-place refresh
 Objects, the range-filter form, both endpoints and their gotchas:
 [references/listing.md](references/listing.md).
 
+## Navigation menus
+
+Menus are store data; a theme finds them through a menu-type `resource` setting (the merchant's
+pick) and the `linklists` global (every menu by handle), in this order: the selected menu → the
+handle `main-menu` (header) / `footer` (footer) → the section's no-menu fallback.
+
+```handlebars
+{{#if menu}}{{> header-nav}}{{else}}{{> header-nav menu=linklists.[main-menu]}}{{/if}}
+```
+
+Read [references/menus.md](references/menus.md) **before writing or changing any header, footer
+or drawer navigation, or adding a menu setting** — the `Menu`/`MenuLink` shape, how a bound
+setting reaches the template, the lookup order, the limits, which items silently disappear, and
+what menu content to create when you do not know the store's ids.
+
 ## E-mail designs
 
 A theme can carry designs for the store's **customer** e-mails (`emails/customer/<template>.json`)
@@ -266,6 +281,12 @@ tokens, the address rule and every rejection reason are there. A working file to
 - **Keep the unsubscribe link in `customer/checkout-abandoned`.** The default design links
   `{{storeUrl}}/checkout/unsubscribe/{{unsubscribeToken}}`; it is legally required for this
   e-mail and nothing enforces it if you drop it.
+- **A menu setting stores a store-specific id — never hard-code one.** A `resource: "menu"`
+  value written into `templates/*.json` or `regions/*.json` resolves on one store only; anywhere
+  else the binding is silently absent. Leave it unset and use the lookup order (selected menu →
+  `linklists.[main-menu]` / `linklists.footer` → fallback links). Branch on the bound `menu`,
+  never on `section.settings.menu` — the raw id is truthy even when it resolves to nothing. See
+  [references/menus.md](references/menus.md).
 - **Image-type SETTINGS do not get variants.** A merchant-uploaded `image` setting is stored as
   a bare URL string, so `{{image_url settings.logo width=480}}` returns that string unchanged.
   Only catalogue images (product, collection, blog, cart) carry variants.

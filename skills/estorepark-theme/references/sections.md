@@ -121,3 +121,11 @@ and only structure the form: `header` (`content`, `info?`) and `paragraph` (`con
 Templates read `section.settings.<id>`, `section.blocks`, `block.settings.<id>`. A schema
 `default` **never enters the render**; without a value the setting is `undefined` (see SKILL.md
 → Gotchas).
+
+A bound `resource` setting (`product`, `collection`, `category`, `menu`) is resolved by the engine
+and exposed at the **top level of the section scope under its setting id** — `{{menu.items}}`,
+`{{collection.products}}` — while `section.settings.<id>` keeps the raw id string. When the id does
+not resolve on this store nothing is bound under that name (a page global with the same name, such
+as `product` on a product page, shows through instead), yet the raw id is still there — so branch
+on the bound object, never on `section.settings.<id>`. Only section settings are bound, not block
+settings. Menus in detail: [menus.md](menus.md).
