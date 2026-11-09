@@ -88,8 +88,9 @@ is missing.
 
 ## `config/hosted-slots.json` in detail
 
-Checkout and the account/login pages are surfaces **the platform** serves; they are not theme
-routes. This file declares which blocks the theme puts into the named zones on those surfaces:
+Checkout and the platform's **fallback** customer pages (used when the theme has no
+`customer.*` template — see [customer-pages.md](customer-pages.md)) are surfaces **the platform**
+serves. This file declares which blocks the theme puts into the named zones on those surfaces:
 
 ```json
 {

@@ -17,8 +17,6 @@ and that a `templates/<name>.json` exists for every `template` it points at.
       "template": "article", "indexTemplate": "blog" },
     { "path": "/sepet", "match": "exact", "kind": "system", "template": "cart" },
     { "path": "/ara", "match": "exact", "kind": "system", "template": "search" },
-    { "path": "/hesap", "match": "exact", "kind": "system", "template": "account" },
-    { "path": "/hesap/ayarlar", "match": "exact", "kind": "system", "template": "account.settings" },
     { "path": "/hakkimizda", "match": "exact", "kind": "page", "template": "page.hakkimizda" }
   ]
 }
@@ -64,8 +62,12 @@ theme's, derived from the exact route with `template: "search"` — `/ara` above
 
 The file name under `templates/` equals the `template` value in the route table. In the default
 theme: `index`, `product`, `product_index`, `collection`, `collection_index`, `category`,
-`category_index`, `blog`, `article`, `cart`, `search`, `account`, `account.settings`,
-`page.<slug>`.
+`category_index`, `blog`, `article`, `cart`, `search`, `page.<slug>`.
 
-Names containing dots are single files: `templates/account.settings.json`,
-`templates/page.hakkimizda.json`.
+Names containing dots are single files: `templates/page.hakkimizda.json`,
+`templates/customer.login.json`.
+
+Customer and policy templates (`customer`, `customer.<page>`, `policy`) are **not** route targets:
+they open at the platform's fixed `/account/*` and `/policies/<slug>` addresses, and a route row
+pointing at them, or at a path under `/account`, is ignored. The old `account` template is not used
+at all. See [customer-pages.md](customer-pages.md).
