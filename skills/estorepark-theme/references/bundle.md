@@ -9,7 +9,8 @@ What each directory holds and what the engine expects from it.
 | `routes.json` | **REQUIRED.** URL table — see [routes.md](routes.md) |
 | `settings_schema.json` | Theme-wide settings form (colour scheme, typography, general preferences) |
 | `settings_data.json` | Values for those settings; the `color_schemes` object lives here |
-| `hosted-slots.json` | Blocks the theme contributes to slots on platform-hosted pages (checkout, account/auth) — see below |
+| `checkout.json` | Optional checkout and thank-you page settings (layout, colours, fonts, texts, block zones) — see [checkout.md](checkout.md) |
+| `hosted-slots.json` | Blocks for the platform's fallback login/register page (`auth.*` zones) — see below |
 | `email_brand.json` | Optional e-mail brand kit (logo, brand colour, kit) the merchant can apply to their e-mails — see [emails.md](emails.md) |
 
 When `config/` is missing, `theme check` warns "are you in the right folder?" — usually a sign
@@ -88,9 +89,10 @@ is missing.
 
 ## `config/hosted-slots.json` in detail
 
-Checkout and the platform's **fallback** customer pages (used when the theme has no
-`customer.*` template — see [customer-pages.md](customer-pages.md)) are surfaces **the platform**
-serves. This file declares which blocks the theme puts into the named zones on those surfaces:
+The platform's **fallback** customer pages (used when the theme has no `customer.*` template — see
+[customer-pages.md](customer-pages.md)) take blocks from this file. Checkout blocks now belong in
+`config/checkout.json` → `zones` ([checkout.md](checkout.md)); the `checkout.*` zones below are read only as a store's older
+settings. This file declares which blocks the theme puts into the named zones:
 
 ```json
 {
