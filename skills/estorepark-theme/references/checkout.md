@@ -40,7 +40,7 @@ with the theme.
 | `summary.heading` | plain text, ≤ 60 |
 | `footer.style` / `footer.note` | `minimal` · `detailed` / plain text, ≤ 500 |
 | `style.corners` / `field_style` / `button_style` | `sharp` · `soft` · `round` / `outlined` · `filled` / `solid` · `outline` |
-| `typography.*_font` | `theme` (follow the theme's `font_picker`) · `system` · `inter` · `roboto` · `poppins` · `montserrat` |
+| `typography.*_font` | `theme` (follow the theme's heading / body `font_picker`) or any platform font library id (see [settings.md](settings.md#fonts)) |
 | `thank_you.style` / `heading` / `message` | `default` · `celebratory` · `compact` / ≤ 80 / ≤ 1000 |
 
 Text is plain: HTML is stripped, line breaks are kept (multi-line fields only), and overlong text is cut. The thank-you
