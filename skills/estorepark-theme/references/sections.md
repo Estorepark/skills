@@ -91,9 +91,9 @@ Common fields: `id` (required, `^[a-z][a-z0-9_]*$`), `label` (required), `info`,
 | `radio` | `options[]` (required), `default` |
 | `icon_select` | `options[]` (required), `default`, `allow_empty` |
 | `color` | `default`, `alpha`, `placeholder` |
-| `color_scheme` | `default` |
+| `color_scheme` | `default` — a scheme id; on a section the platform adds `color-<id>` (see [settings.md](settings.md#colour-schemes)) |
 | `color_scheme_group` | `definition[]` — DEFINES the colour schemes, carries no value |
-| `font_picker` | `default` (required) |
+| `font_picker` | `default` (required) — a platform font library id; `role: heading\|body` (see [settings.md](settings.md#fonts)) |
 | `image` | — (value is a bare URL string; **no size variants** — see `image_url` in SKILL.md) |
 | `video_url` | `accept: ('youtube'\|'vimeo')[]` (required) |
 | `url` | `default`, `placeholder`, `allow_relative`, `open_target` |
