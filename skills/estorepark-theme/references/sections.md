@@ -15,7 +15,10 @@ shell:
 
 The tag comes from `schema.tag` (`div` when absent), the class from `schema.class`, and
 `section--<mode>` from **`settings.width`** (`contained` · `full` · `narrow`; an unrecognised
-value is ignored). Editor selection attributes (`data-editor-section`, plus
+value is ignored). The editor does not add a width control of its own: if a section should offer widths,
+declare a `width` setting in its schema (a `select` with `contained`, `full` and `narrow`) and style
+`.section--contained`, `.section--full` and `.section--narrow` in your CSS. Without both, leave the
+setting out — a setting that makes no visible difference in the preview should not exist. Editor selection attributes (`data-editor-section`, plus
 `data-editor-container` inside a region) are added automatically in design mode — do not write
 your own shell.
 
