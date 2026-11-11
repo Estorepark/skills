@@ -113,7 +113,7 @@ the theme has to follow.
 - The response is `{ "sections": { "<address>": "<html>" } }` and each `html` **includes the section
   wrapper**: `<section id="esp-section-<template key>" class="esp-section …">`. Replace the node
   with that id — writing it into `innerHTML` nests a section per refresh and duplicates ids.
-- Empty `sections` (unknown address, error, or a cache-sensitive template such as `cart`/`account`,
+- Empty `sections` (unknown address, error, or a cache-sensitive template such as `cart`/`customer`,
   which is refused) means **reload the page**. Same contract as the cart fragment.
 - Bind the click handler **once, on the document**, by delegation. The section node is replaced on
   every refresh, so a listener bound to the node either disappears with it or accumulates.

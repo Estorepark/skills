@@ -1,11 +1,11 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), header/footer navigation menus (menu-type `resource` settings, the `linklists` global), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "header menüsü", "menüyü temaya bağla", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla" gibi isteklerde kullan. To upload or publish a theme, or to create store menus, use the estorepark-cli skill instead.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), header/footer navigation menus (menu-type `resource` settings, the `linklists` global), customer pages (`customer.*` templates with `@platform/*` blocks), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "header menüsü", "menüyü temaya bağla", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla", "giriş sayfasını tasarla", "hesap sayfası" gibi isteklerde kullan. To upload or publish a theme, or to create store menus, use the estorepark-cli skill instead.
 license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.7.0"
+  version: "0.8.0"
 ---
 
 # The EstorePark theme bundle
@@ -218,6 +218,18 @@ or `config/email_brand.json`** — file format, the recognised template keys, th
 tokens, the address rule and every rejection reason are there. A working file to start from:
 [`assets/email-template.json`](assets/email-template.json).
 
+## Customer pages
+
+Login, registration, password and account pages are theme templates (`templates/customer*.json`,
+`templates/policy.json`) at fixed platform addresses (`/account/*`, `/policies/<slug>`). They are not
+routes. Each page needs a required **platform block** (`@platform/login-form`,
+`@platform/order-list` …) inside a section that accepts it and renders its blocks. Without that
+block the store shows the platform's fallback page. No theme JavaScript runs there, and customer
+data reaches only the platform blocks. Read
+[references/customer-pages.md](references/customer-pages.md) **before creating or editing any
+`customer*` or `policy` template** — the page list, required blocks, block settings and the stable
+CSS classes are there.
+
 ## Gotchas
 
 - **A schema `default` is NOT applied at render time.** `default` is editor metadata. Rendering
@@ -227,6 +239,9 @@ tokens, the address rule and every rejection reason are there. A working file to
   When adding a section, write the defaults into the template/region JSON as well.
 - **A setting `id` must match `^[a-z][a-z0-9_]*$`.** A hyphenated id (`hero-title`) parses as a
   **subtraction expression** in Handlebars → silent breakage, no error, empty output.
+- **`/account` and `/account/*` are platform-reserved**, and so are templates of type `customer`,
+  `policy` and `account`: a route row for them is ignored. Never ship `blocks/@platform/*` files —
+  `theme check` rejects them. See [references/customer-pages.md](references/customer-pages.md).
 - **`/cart` and `/cart/*` are platform-reserved.** Even if the bundle declares the same path,
   the platform route wins. The cart **page** is the theme's own: `templates/cart.json` plus an
   exact route with `template: "cart"` in `routes.json` (`/sepet` in the default theme). Post
