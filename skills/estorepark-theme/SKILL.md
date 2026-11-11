@@ -1,11 +1,11 @@
 ---
 name: estorepark-theme
-description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), header/footer navigation menus (menu-type `resource` settings, the `linklists` global), customer pages (`customer.*` templates with `@platform/*` blocks), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "header menüsü", "menüyü temaya bağla", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla", "giriş sayfasını tasarla", "hesap sayfası" gibi isteklerde kullan. To upload or publish a theme, or to create store menus, use the estorepark-cli skill instead.
+description: Write EstorePark storefront themes — the bundle contract covering `.vitrine` Handlebars templates with embedded section schemas, template/region JSON, `config/routes.json`, the closed helper catalogue, i18n, the listing surfaces (search box and autocomplete, facet panel, sorting, pagination), header/footer navigation menus (menu-type `resource` settings, the `linklists` global), customer pages (`customer.*` templates with `@platform/*` blocks), and optional customer e-mail designs shipped with the theme (`emails/`, `config/email_brand.json`). EstorePark tema geliştirme; "section ekle", "yeni şablon", "vitrin temasını düzenle", "rota ekle", "tema ayarı ekle", "arama kutusu ekle", "filtre paneli", "sıralama", "sayfalama", "header menüsü", "menüyü temaya bağla", "temaya e-posta tasarımı ekle", "e-posta şablonu tasarla", "giriş sayfasını tasarla", "hesap sayfası", "ödeme sayfası" gibi isteklerde kullan. To upload or publish a theme, or to create store menus, use the estorepark-cli skill instead.
 license: MIT
 compatibility: The EstorePark V2 (vitrine) render engine. Validation requires `estorepark theme check`.
 metadata:
   author: estorepark
-  version: "0.8.0"
+  version: "0.9.0"
 ---
 
 # The EstorePark theme bundle
@@ -229,6 +229,13 @@ data reaches only the platform blocks. Read
 [references/customer-pages.md](references/customer-pages.md) **before creating or editing any
 `customer*` or `policy` template** — the page list, required blocks, block settings and the stable
 CSS classes are there.
+
+## Checkout page
+
+Checkout and thank-you pages are built by the platform; the theme ships only data in `config/checkout.json` (fixed schema
+v1): layout, per-area colour scheme and background image (media id), fonts, corner/field/button style, texts and up to five
+allowed blocks per zone, rendered with the theme's own block files. Invalid values fall back silently and `theme check`
+warns. Read [references/checkout.md](references/checkout.md) **before creating or editing `config/checkout.json`**.
 
 ## Gotchas
 
